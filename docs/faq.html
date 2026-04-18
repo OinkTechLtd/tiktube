@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — TikTube</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+:root{--red:#ff0040;--red2:#ff4d6d;--bg:#060606;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.45)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:#f0f0f0;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding:40px 20px 100px}
+.back{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:rgba(255,64,77,.1);border:1px solid rgba(255,64,77,.2);border-radius:99px;font-size:13px;font-weight:700;color:var(--red2);margin-bottom:36px;text-decoration:none}
+.back:hover{background:rgba(255,64,77,.2)}
+h1{font-size:34px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;background:linear-gradient(135deg,#fff,var(--red2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--muted);font-size:15px;margin-bottom:48px}
+
+.cat-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red2);margin:36px 0 16px}
+
+details{border-bottom:1px solid var(--border)}
+details:first-of-type{border-top:1px solid var(--border)}
+summary{padding:18px 0;font-size:15px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-size:20px;color:var(--red2);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+.faq-body{padding-bottom:18px;font-size:14px;color:var(--muted);line-height:1.75}
+.faq-body a{color:var(--red2)}
+.faq-body code{background:rgba(255,255,255,.08);border-radius:5px;padding:1px 7px;font-size:12px;font-family:monospace;color:#a8ff78}
+
+.cta{margin-top:56px;text-align:center;padding:40px;background:rgba(255,0,64,.07);border:1px solid rgba(255,0,64,.18);border-radius:20px}
+.cta-btn{display:inline-block;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;padding:14px 36px;border-radius:99px;font-size:15px;font-weight:800;text-decoration:none;margin-top:14px}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <a href="../index.html" class="back">← TikTube</a>
+    <h1>FAQ</h1>
+    <p class="sub">Ответы на самые частые вопросы</p>
+
+    <div class="cat-title">Видео и воспроизведение</div>
+
+    <details>
+        <summary>Почему чёрный экран при воспроизведении?</summary>
+        <div class="faq-body">
+            YouTube блокирует встраивание на незнакомых доменах. TikTube использует несколько прокси-серверов и автоматически переключается между ними. Нажми кнопку 🔄 «Прокси» на видео — плеер перезагрузится с другим сервером. Если все не работают — жми «Открыть на YouTube».
+        </div>
+    </details>
+
+    <details>
+        <summary>Видео грузится, но не играет</summary>
+        <div class="faq-body">
+            Убедись что: 1) Ты нажал на кнопку ▶ в центре; 2) Звук не заблокирован браузером (нажми на иконку 🔇 в адресной строке); 3) Попробуй нажать 🔄 чтобы сменить прокси-сервер.
+        </div>
+    </details>
+
+    <details>
+        <summary>Можно смотреть видео без YouTube API ключа?</summary>
+        <div class="faq-body">
+            Да — если у тебя есть прямая ссылка вида <code>tiktube.site/?v=VIDEO_ID</code>. Видео откроется без ключа. Ключ нужен только для поиска и загрузки трендов.
+        </div>
+    </details>
+
+    <details>
+        <summary>Как переключить прокси если видео не работает?</summary>
+        <div class="faq-body">
+            Нажми кнопку 🔄 <strong>«Прокси»</strong> на боковой панели видео или в нижней полоске. Приложение автоматически попробует следующий прокси-сервер из списка. Всего их 4 штуки.
+        </div>
+    </details>
+
+    <div class="cat-title">YouTube API ключ</div>
+
+    <details>
+        <summary>Зачем нужен API ключ?</summary>
+        <div class="faq-body">
+            Для поиска видео и загрузки трендов приложение обращается к YouTube Data API v3. Google требует ключ для авторизации запросов. Ключ полностью бесплатный.
+        </div>
+    </details>
+
+    <details>
+        <summary>Как получить API ключ?</summary>
+        <div class="faq-body">
+            Читай <a href="../api-tutorial.html">подробный туториал с иллюстрациями</a>. Кратко: зайди на <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a>, создай проект, включи YouTube Data API v3, создай API key.
+        </div>
+    </details>
+
+    <details>
+        <summary>API ключ реально бесплатный?</summary>
+        <div class="faq-body">
+            Да. YouTube Data API v3 бесплатный до 10 000 единиц в день. Карта не нужна. Поиск стоит 100 единиц, загрузка видео — 1 единицу. Для личного использования хватает с запасом.
+        </div>
+    </details>
+
+    <details>
+        <summary>Ошибка "API key not valid"</summary>
+        <div class="faq-body">
+            Проверь: 1) Ключ скопирован без лишних пробелов; 2) В проекте включён именно YouTube Data API v3; 3) Ключ не ограничен по IP/домену (убери ограничения или добавь нужный домен).
+        </div>
+    </details>
+
+    <details>
+        <summary>Ошибка 403 quotaExceeded</summary>
+        <div class="faq-body">
+            Превышена дневная квота. Подожди до следующего дня (сброс ~12:00 МСК). Или создай второй проект в Google Cloud и новый ключ.
+        </div>
+    </details>
+
+    <div class="cat-title">Шаринг и ссылки</div>
+
+    <details>
+        <summary>Как поделиться видео с другом?</summary>
+        <div class="faq-body">
+            Нажми 🔗 «Поделиться» на боковой панели или в нижней полоске. Скопируй ссылку — она выглядит так: <code>tiktube.site/?v=dQw4w9WgXcQ</code>. Друг откроет видео сразу, даже без API ключа.
+        </div>
+    </details>
+
+    <details>
+        <summary>Ссылка у меня и у друга ведёт на разные видео?</summary>
+        <div class="faq-body">
+            Такого быть не должно — ссылка привязана к конкретному <code>VIDEO_ID</code> из YouTube. Убедись что копируешь полную ссылку с параметром <code>?v=...</code>.
+        </div>
+    </details>
+
+    <div class="cat-title">Технические вопросы</div>
+
+    <details>
+        <summary>Приложение сохраняет мои данные?</summary>
+        <div class="faq-body">
+            API ключ и лайки сохраняются только в твоём браузере (localStorage). На сервер ничего не отправляется. Читай нашу <a href="privacy.html">Политику конфиденциальности</a>.
+        </div>
+    </details>
+
+    <details>
+        <summary>Работает ли на мобильном?</summary>
+        <div class="faq-body">
+            Да, приложение оптимизировано для мобильных. Листай видео свайпом вверх/вниз — как TikTok. Работает в Chrome, Safari, Firefox на iOS и Android.
+        </div>
+    </details>
+
+    <details>
+        <summary>TikTube не связан с YouTube/Google?</summary>
+        <div class="faq-body">
+            Верно. TikTube — независимый проект с открытым кодом. Он использует публичный YouTube Data API v3 по правилам Google. Мы не являемся аффилиатами YouTube или Google.
+        </div>
+    </details>
+
+    <div class="cta">
+        <div style="font-size:36px;margin-bottom:10px">🎬</div>
+        <div style="font-size:20px;font-weight:900;margin-bottom:8px">Готов смотреть?</div>
+        <div style="color:var(--muted);font-size:14px">Заходи и листай видео без VPN</div>
+        <a href="../index.html" class="cta-btn">▶ Открыть TikTube</a>
+    </div>
+</div>
+</body>
+</html>

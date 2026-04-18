@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Политика конфиденциальности — TikTube</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+:root{--red:#ff0040;--red2:#ff4d6d;--bg:#060606;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.45)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:#f0f0f0;line-height:1.8}
+.wrap{max-width:720px;margin:0 auto;padding:40px 20px 100px}
+.back{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:rgba(255,64,77,.1);border:1px solid rgba(255,64,77,.2);border-radius:99px;font-size:13px;font-weight:700;color:var(--red2);margin-bottom:36px;text-decoration:none}
+h1{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:8px}
+.date{font-size:13px;color:var(--muted);margin-bottom:44px}
+h2{font-size:18px;font-weight:800;margin:36px 0 12px;color:#fff}
+p{font-size:15px;color:rgba(255,255,255,.75);margin-bottom:12px}
+ul{padding-left:20px;margin-bottom:12px}
+li{font-size:15px;color:rgba(255,255,255,.75);margin-bottom:6px}
+a{color:var(--red2)}
+.highlight{background:rgba(0,255,135,.07);border:1px solid rgba(0,255,135,.2);border-radius:12px;padding:16px 20px;margin:20px 0;font-size:14px;color:rgba(0,255,135,.9)}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <a href="../index.html" class="back">← TikTube</a>
+    <h1>Политика конфиденциальности</h1>
+    <p class="date">Последнее обновление: январь 2025 г.</p>
+
+    <div class="highlight">
+        🔒 Коротко: мы не собираем никаких личных данных. Всё хранится только на твоём устройстве.
+    </div>
+
+    <h2>1. Какие данные мы собираем</h2>
+    <p>TikTube <strong>не собирает и не хранит</strong> никаких персональных данных пользователей на серверах. Всё хранится исключительно в локальном хранилище твоего браузера (localStorage):</p>
+    <ul>
+        <li>YouTube API ключ (введённый тобой)</li>
+        <li>Список лайкнутых видео</li>
+    </ul>
+    <p>Эти данные никогда не покидают твоё устройство.</p>
+
+    <h2>2. Сторонние сервисы</h2>
+    <p>TikTube использует следующие сторонние сервисы:</p>
+    <ul>
+        <li><strong>YouTube Data API v3 (Google)</strong> — для поиска видео и загрузки метаданных. Твои запросы к API регулируются <a href="https://policies.google.com/privacy" target="_blank">Политикой конфиденциальности Google</a>.</li>
+        <li><strong>Прокси-серверы</strong> — для воспроизведения видео. Они работают как промежуточный слой между тобой и YouTube. Мы не контролируем логирование этих серверов.</li>
+        <li><strong>Google Fonts</strong> — для загрузки шрифтов. Google может записывать IP-адреса при запросах к CDN.</li>
+    </ul>
+
+    <h2>3. Cookies и трекинг</h2>
+    <p>TikTube не использует cookies, аналитику, счётчики, пиксели отслеживания или любые другие инструменты трекинга.</p>
+
+    <h2>4. Реклама</h2>
+    <p>TikTube не показывает рекламу и не монетизирует пользовательские данные.</p>
+
+    <h2>5. Дети</h2>
+    <p>TikTube не предназначен для детей до 13 лет. Мы не собираем данные детей намеренно.</p>
+
+    <h2>6. Как удалить свои данные</h2>
+    <p>Открой настройки браузера → очисти данные сайта (localStorage). Или в консоли браузера:</p>
+    <div style="background:rgba(0,0,0,.6);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:monospace;font-size:13px;color:#a8ff78;margin:14px 0">localStorage.clear()</div>
+
+    <h2>7. Изменения политики</h2>
+    <p>Мы можем обновлять эту политику. Об изменениях будет сообщено на сайте. Продолжение использования сервиса означает согласие с новой редакцией.</p>
+
+    <h2>8. Контакт</h2>
+    <p>Вопросы по конфиденциальности: создай <a href="https://github.com" target="_blank">Issue на GitHub</a>.</p>
+</div>
+</body>
+</html>
