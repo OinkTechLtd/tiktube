@@ -557,13 +557,14 @@ const PROXIES = [
     { name:'Direct (nocookie)', host:'youtube-nocookie.com', url: id => `https://www.youtube-nocookie.com/embed/${id}`, direct:true },
 ];
 
-const EMBED_PARAMS = 'autoplay=1&mute=1&controls=1&rel=0&modestbranding=1&playsinline=1&fs=1&iv_load_policy=3';
+const EMBED_PARAMS = 'autoplay=1&mute=1&controls=1&rel=0&modestbranding=1&playsinline=1&fs=1&iv_load_policy=3&enablejsapi=1';
 const TIMEOUT_MS  = 7000; // если iframe не ожидает за 7с — пробуем следующий
 
 let activeProxy   = 0;
 let proxyAttempts = {}; // videoId → attempt index
 let currentVideoId = null;
 let currentChannelId = null;
+const playerSessions = {}; // idx -> runtime session state
 
 function buildSrc(videoId, proxyIdx) {
     const p = PROXIES[proxyIdx];
@@ -807,36 +808,43 @@ ${idx < this.videos.length-1 ? '<div class="swipe-hint">👇</div>' : ''}
         const ifc= document.getElementById('if-'+idx);
         if(pb) pb.classList.add('hidden');
         if(pl) pl.textContent = '⏳ ' + PROXIES[pi].name;
+        const pe = document.getElementById('pe-'+idx);
+        if(pe) pe.classList.remove('show');
 
         // Remove old iframe if any
         if(ifc) ifc.innerHTML='';
+        this.disposePlayerSession(idx);
 
         const iframe = document.createElement('iframe');
         iframe.className = 'yt-frame';
         iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
         iframe.allowFullscreen = true;
+        iframe.referrerPolicy = 'origin';
         if(ifc) ifc.appendChild(iframe);
 
-        // Timeout: if iframe doesn't fire load in time → try next proxy
+        // Timeout: if iframe не стал реальным YouTube плеером вовремя → fallback
         const timeout = setTimeout(()=>{
             console.warn(`Proxy ${pi} timeout for ${vid}`);
             this.tryNextProxy(idx, pi, vid, tc, pb, pl, ifc);
         }, TIMEOUT_MS);
 
+        playerSessions[idx] = {
+            iframe,
+            vid,
+            proxyIdx: pi,
+            timeout,
+            tc,
+            pl,
+            pb,
+            ready: false,
+            commandTimer: null,
+        };
+
         iframe.onload = () => {
-            clearTimeout(timeout);
-            // Small delay then fade in — gives YouTube player time to initialize
-            setTimeout(()=>{
-                iframe.classList.add('ready');
-                if(tc) tc.style.opacity='0';
-                if(pl) pl.textContent = '🟢 ' + PROXIES[pi].name;
-                activeProxy = pi;
-                updateProxyPill();
-            }, 800);
+            this.startPlayerHandshake(idx);
         };
 
         iframe.onerror = () => {
-            clearTimeout(timeout);
             this.tryNextProxy(idx, pi, vid, tc, pb, pl, ifc);
         };
 
@@ -845,12 +853,58 @@ ${idx < this.videos.length-1 ? '<div class="swipe-hint">👇</div>' : ''}
     },
 
     tryNextProxy(idx, failedPi, vid, tc, pb, pl, ifc) {
+        this.disposePlayerSession(idx);
         const next = failedPi+1;
         if(next >= PROXIES.length) { this.showPlayerError(idx); return; }
         console.log(`Trying proxy ${next} for ${vid}`);
         if(pl) pl.textContent = `⚡ Пробуем ${PROXIES[next].name}...`;
         showToast(`🔄 Переключаем на ${PROXIES[next].name}`);
         this.playSlide(idx, next);
+    },
+
+    startPlayerHandshake(idx) {
+        const session = playerSessions[idx];
+        if(!session || !session.iframe) return;
+        const { iframe } = session;
+
+        const send = (func, args=[]) => {
+            try {
+                iframe.contentWindow?.postMessage(JSON.stringify({
+                    event: 'command',
+                    func,
+                    args
+                }), '*');
+            } catch(e){}
+        };
+
+        send('mute');
+        send('playVideo');
+
+        session.commandTimer = setInterval(() => {
+            send('mute');
+            send('playVideo');
+        }, 700);
+    },
+
+    markPlayerReady(idx) {
+        const s = playerSessions[idx];
+        if(!s || s.ready) return;
+        s.ready = true;
+        clearTimeout(s.timeout);
+        if(s.commandTimer) clearInterval(s.commandTimer);
+        s.iframe.classList.add('ready');
+        if(s.tc) s.tc.style.opacity='0';
+        if(s.pl) s.pl.textContent = '🟢 ' + PROXIES[s.proxyIdx].name;
+        activeProxy = s.proxyIdx;
+        updateProxyPill();
+    },
+
+    disposePlayerSession(idx) {
+        const s = playerSessions[idx];
+        if(!s) return;
+        clearTimeout(s.timeout);
+        if(s.commandTimer) clearInterval(s.commandTimer);
+        delete playerSessions[idx];
     },
 
     nextProxy(idx) {
@@ -881,6 +935,7 @@ ${idx < this.videos.length-1 ? '<div class="swipe-hint">👇</div>' : ''}
             try{
                 const slideIdx=parseInt(f.closest('.slide')?.dataset.idx||'-1');
                 if(slideIdx!==idx && f.src) {
+                    this.disposePlayerSession(slideIdx);
                     f.src='about:blank';
                     f.classList.remove('ready');
                     const tc=document.getElementById('tc-'+slideIdx);
@@ -1086,6 +1141,28 @@ document.getElementById('searchInp').addEventListener('input', e=>{
 document.addEventListener('DOMContentLoaded', ()=>{
     const {v} = getParams();
     if(v) enterApp();
+});
+
+window.addEventListener('message', (event) => {
+    const raw = typeof event.data === 'string' ? event.data : '';
+    if(!raw || raw[0] !== '{') return;
+
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { return; }
+    if(!data) return;
+
+    const idx = Object.keys(playerSessions).find((k) => playerSessions[k].iframe?.contentWindow === event.source);
+    if(idx === undefined) return;
+
+    const parsedIdx = parseInt(idx, 10);
+    if(Number.isNaN(parsedIdx)) return;
+
+    const infoState = data.info?.playerState;
+    if(data.event === 'onReady' || data.event === 'initialDelivery') {
+        App.markPlayerReady(parsedIdx);
+    } else if(data.event === 'infoDelivery' && [1,2,3,5,0].includes(infoState)) {
+        App.markPlayerReady(parsedIdx);
+    }
 });
 </script>
 </body>
