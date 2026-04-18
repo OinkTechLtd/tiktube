@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Как получить YouTube API ключ — TikTube</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f; color: #e8e8e8; line-height: 1.7;
+        }
+        .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: #ff4081; text-decoration: none; font-size: 14px;
+            margin-bottom: 32px; padding: 8px 16px; border-radius: 20px;
+            background: rgba(255,64,129,0.1); border: 1px solid rgba(255,64,129,0.25);
+        }
+        .back-btn:hover { background: rgba(255,64,129,0.2); }
+
+        h1 {
+            font-size: 32px; font-weight: 900; margin-bottom: 10px;
+            background: linear-gradient(45deg,#ff0050,#ff4081);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .intro { color: rgba(255,255,255,0.55); font-size: 15px; margin-bottom: 40px; }
+
+        .toc {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 24px; margin-bottom: 40px;
+        }
+        .toc h3 { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .toc a { display: block; color: #ff4081; font-size: 14px; padding: 4px 0; text-decoration: none; }
+        .toc a:hover { color: #ff0050; }
+
+        .step {
+            margin-bottom: 48px;
+            border-left: 3px solid #ff0050;
+            padding-left: 24px;
+        }
+        .step-num {
+            display: inline-block; background: #ff0050; color: white;
+            font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
+            margin-bottom: 10px; letter-spacing: 0.5px;
+        }
+        h2 { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+        p { color: rgba(255,255,255,0.75); margin-bottom: 12px; font-size: 15px; }
+
+        .img-placeholder {
+            width: 100%; height: 180px; background: rgba(255,255,255,0.05);
+            border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.2); font-size: 13px; margin: 16px 0;
+        }
+
+        a.ext-link {
+            color: #ff4081; text-decoration: underline; word-break: break-all;
+        }
+
+        .code-block {
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 16px 20px; font-family: 'Courier New', monospace;
+            font-size: 13px; color: #a8ff78; margin: 14px 0; overflow-x: auto;
+        }
+
+        .tip {
+            background: rgba(0,255,150,0.07); border: 1px solid rgba(0,255,150,0.2);
+            border-radius: 12px; padding: 16px 20px; margin: 16px 0;
+            font-size: 14px; color: rgba(0,255,150,0.9);
+        }
+        .tip::before { content: '💡 '; }
+
+        .warn {
+            background: rgba(255,170,0,0.07); border: 1px solid rgba(255,170,0,0.25);
+            border-radius: 12px; padding: 16px 20px; margin: 16px 0;
+            font-size: 14px; color: rgba(255,200,0,0.9);
+        }
+        .warn::before { content: '⚠️ '; }
+
+        .step-list { list-style: none; padding: 0; }
+        .step-list li {
+            display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start;
+        }
+        .step-list li .num {
+            flex-shrink: 0; width: 28px; height: 28px; background: #ff0050;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; margin-top: 2px;
+        }
+        .step-list li p { margin: 0; }
+
+        .faq-item {
+            border-bottom: 1px solid rgba(255,255,255,0.07); padding: 18px 0;
+        }
+        .faq-q { font-weight: 700; margin-bottom: 8px; color: white; }
+        .faq-a { color: rgba(255,255,255,0.6); font-size: 14px; }
+
+        .cta {
+            text-align: center; padding: 40px; background: rgba(255,0,80,0.08);
+            border: 1px solid rgba(255,0,80,0.2); border-radius: 18px; margin-top: 40px;
+        }
+        .cta-btn {
+            display: inline-block; background: #ff0050; color: white; text-decoration: none;
+            padding: 14px 36px; border-radius: 30px; font-weight: 700; font-size: 16px;
+            margin-top: 16px;
+        }
+        .cta-btn:hover { background: #ff4081; }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 26px; }
+            h2 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <a href="index.html" class="back-btn">← Назад в TikTube</a>
+
+    <h1>Как получить YouTube API ключ</h1>
+    <p class="intro">Подробный туториал шаг за шагом — от регистрации до работающего ключа. Занимает ~5 минут, ключ бесплатный.</p>
+
+    <div class="toc">
+        <h3>Содержание</h3>
+        <a href="#step1">Шаг 1 — Зайти в Google Cloud Console</a>
+        <a href="#step2">Шаг 2 — Создать проект</a>
+        <a href="#step3">Шаг 3 — Включить YouTube Data API v3</a>
+        <a href="#step4">Шаг 4 — Создать API ключ</a>
+        <a href="#step5">Шаг 5 — Вставить ключ в TikTube</a>
+        <a href="#limits">Лимиты и квоты</a>
+        <a href="#faq">Частые вопросы</a>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step" id="step1">
+        <div class="step-num">ШАГ 1</div>
+        <h2>Зайти в Google Cloud Console</h2>
+        <p>Открой ссылку в браузере:</p>
+        <div class="code-block">https://console.cloud.google.com/</div>
+        <p>Войди в аккаунт Google (или создай — это бесплатно). Если видишь предложение принять условия использования — принимай.</p>
+        <div class="tip">Аккаунт Google нужен любой — можно использовать личную почту @gmail.com</div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="step2">
+        <div class="step-num">ШАГ 2</div>
+        <h2>Создать новый проект</h2>
+        <p>В левом верхнем углу нажми на название проекта (или кнопку <strong>"Select a project"</strong>). Откроется попап.</p>
+        <ul class="step-list">
+            <li><div class="num">1</div><p>Нажми <strong>"NEW PROJECT"</strong> (в правом верхнем углу попапа)</p></li>
+            <li><div class="num">2</div><p>В поле <strong>Project name</strong> введи любое название, например: <code>tiktube-app</code></p></li>
+            <li><div class="num">3</div><p>Нажми <strong>"CREATE"</strong> и подожди пару секунд пока проект создастся</p></li>
+            <li><div class="num">4</div><p>Убедись что ты выбрал только что созданный проект (проверь в левом верхнем углу)</p></li>
+        </ul>
+        <div class="tip">Название проекта не важно — только ты его видишь</div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="step3">
+        <div class="step-num">ШАГ 3</div>
+        <h2>Включить YouTube Data API v3</h2>
+        <p>Теперь нужно активировать нужный API для этого проекта.</p>
+        <ul class="step-list">
+            <li><div class="num">1</div><p>В левом меню нажми <strong>"APIs & Services"</strong> → <strong>"Library"</strong></p></li>
+            <li><div class="num">2</div><p>В поиске напиши: <code>YouTube Data API v3</code></p></li>
+            <li><div class="num">3</div><p>Кликни на результат <strong>"YouTube Data API v3"</strong></p></li>
+            <li><div class="num">4</div><p>Нажми большую синюю кнопку <strong>"ENABLE"</strong></p></li>
+            <li><div class="num">5</div><p>Подожди несколько секунд пока API активируется</p></li>
+        </ul>
+        <div class="warn">Обязательно убедись что выбрал именно <strong>YouTube Data API v3</strong>, а не другой YouTube API</div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step4">
+        <div class="step-num">ШАГ 4</div>
+        <h2>Создать API ключ</h2>
+        <p>После активации API нужно создать сам ключ доступа.</p>
+        <ul class="step-list">
+            <li><div class="num">1</div><p>В левом меню нажми <strong>"APIs & Services"</strong> → <strong>"Credentials"</strong></p></li>
+            <li><div class="num">2</div><p>Нажми <strong>"+ CREATE CREDENTIALS"</strong> вверху страницы</p></li>
+            <li><div class="num">3</div><p>Выбери <strong>"API key"</strong> из выпадающего списка</p></li>
+            <li><div class="num">4</div><p>Ключ создастся автоматически — появится попап с ключом</p></li>
+            <li><div class="num">5</div><p>Скопируй ключ — он выглядит примерно так:</p></li>
+        </ul>
+        <div class="code-block">AIzaSyD-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+        <div class="tip">Нажми кнопку "RESTRICT KEY" чтобы ограничить ключ только YouTube API — это повысит безопасность (необязательно, но рекомендуется)</div>
+        <p>Если хочешь ограничить ключ (рекомендуется):</p>
+        <ul class="step-list">
+            <li><div class="num">A</div><p>В разделе <strong>"API restrictions"</strong> выбери "Restrict key"</p></li>
+            <li><div class="num">B</div><p>Из списка выбери <strong>"YouTube Data API v3"</strong></p></li>
+            <li><div class="num">C</div><p>Нажми <strong>"SAVE"</strong></p></li>
+        </ul>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step" id="step5">
+        <div class="step-num">ШАГ 5</div>
+        <h2>Вставить ключ в TikTube</h2>
+        <ul class="step-list">
+            <li><div class="num">1</div><p>Вернись на главную страницу TikTube</p></li>
+            <li><div class="num">2</div><p>Нажми кнопку <strong>⚙️</strong> (настройки) в правом верхнем углу</p></li>
+            <li><div class="num">3</div><p>Вставь скопированный ключ в поле ввода</p></li>
+            <li><div class="num">4</div><p>Нажми <strong>"Сохранить"</strong></p></li>
+            <li><div class="num">5</div><p>Готово! Видео начнут загружаться 🎉</p></li>
+        </ul>
+        <div class="tip">Ключ сохраняется в браузере — вводить его каждый раз не нужно</div>
+    </div>
+
+    <!-- LIMITS -->
+    <div class="step" id="limits">
+        <div class="step-num">ЛИМИТЫ</div>
+        <h2>Квоты и ограничения (бесплатно)</h2>
+        <p>YouTube API бесплатный, но у него есть дневные лимиты:</p>
+        <div class="code-block">
+Бесплатная квота: 10 000 единиц / день
+
+Стоимость запросов:
+• Поиск (search)    = 100 единиц
+• Видео (videos)    = 1 единица
+• Каналы (channels) = 1 единица
+
+Пример: 10 000 / 100 = 100 поисков в день (бесплатно)
+        </div>
+        <div class="tip">Для личного использования квоты более чем достаточно. Сброс происходит каждый день в полночь по тихоокеанскому времени (Лос-Анджелес).</div>
+        <div class="warn">Если превысишь квоту — появится ошибка 403. Просто подожди до следующего дня или запроси увеличение квоты в Google Cloud Console.</div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="step" id="faq">
+        <div class="step-num">FAQ</div>
+        <h2>Частые вопросы</h2>
+
+        <div class="faq-item">
+            <div class="faq-q">❓ API ключ бесплатный?</div>
+            <div class="faq-a">Да, полностью бесплатный до исчерпания дневной квоты в 10 000 единиц. Карта не нужна.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">❓ Нужна кредитная карта?</div>
+            <div class="faq-a">Нет. YouTube Data API v3 не требует платёжных данных. Регистрируйся только с Google-аккаунтом.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">❓ Ошибка "API key not valid"</div>
+            <div class="faq-a">Убедись что: 1) Ключ скопирован без лишних пробелов, 2) Для проекта включён YouTube Data API v3, 3) Ключ не ограничен по IP или доменам неправильно.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">❓ Ошибка 403 quotaExceeded</div>
+            <div class="faq-a">Исчерпана дневная квота. Подожди до следующего дня (сброс в ~12:00 по МСК). Или создай второй проект с новым ключом.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">❓ Почему видео не воспроизводится?</div>
+            <div class="faq-a">Это не зависит от API ключа. Нажми кнопку 🔄 (Прокси) на видео чтобы переключиться на другой прокси-сервер. Если все прокси не работают — попробуй позже.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">❓ Можно ли поделиться ключом с другом?</div>
+            <div class="faq-a">Технически можно, но не рекомендуется — вы будете расходовать общую квоту. Лучше каждый создаёт свой ключ — это быстро и бесплатно.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">❓ Видео не загружаются вообще без API ключа?</div>
+            <div class="faq-a">Если кто-то поделился с тобой ссылкой на конкретное видео (с параметром ?v=...) — оно откроется и без API ключа. Ключ нужен только для поиска и загрузки трендов.</div>
+        </div>
+    </div>
+
+    <div class="cta">
+        <div style="font-size:36px;margin-bottom:12px">✅</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:8px">Готово! Теперь вставь ключ в TikTube</div>
+        <div style="color:rgba(255,255,255,0.5);font-size:14px">Нажми ⚙️ в правом верхнем углу приложения</div>
+        <a href="index.html" class="cta-btn">← Перейти в TikTube</a>
+    </div>
+</div>
+</body>
+</html>

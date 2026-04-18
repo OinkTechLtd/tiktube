@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTube — YouTube без VPN</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+
+        .app { height: 100vh; position: relative; }
+
+        /* ───── LANDING ───── */
+        .landing {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a0010 50%, #0f0f0f 100%);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+        }
+        .landing.hidden { display: none; }
+
+        .landing-logo {
+            font-size: 52px;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff0050, #ff4081, #ff6d00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+        .landing-tagline {
+            font-size: 20px;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .landing-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 40px;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+        .landing-badges {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .badge {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+        }
+        .badge span { margin-right: 6px; }
+
+        .landing-btn {
+            background: linear-gradient(45deg, #ff0050, #ff4081);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 16px;
+            width: 100%;
+            max-width: 320px;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(255,0,80,0.4);
+        }
+        .landing-btn:hover { transform: scale(1.03); box-shadow: 0 6px 30px rgba(255,0,80,0.6); }
+
+        .landing-link {
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .landing-link:hover { color: rgba(255,255,255,0.7); }
+
+        .proxy-status {
+            margin-top: 30px;
+            padding: 12px 20px;
+            background: rgba(0,255,100,0.08);
+            border: 1px solid rgba(0,255,100,0.2);
+            border-radius: 12px;
+            font-size: 12px;
+            color: rgba(0,255,100,0.8);
+        }
+
+        /* ───── HEADER ───── */
+        .header {
+            position: fixed;
+            top: 0; width: 100%; height: 60px;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .logo {
+            font-size: 22px; font-weight: 900;
+            background: linear-gradient(45deg, #ff0050, #ff4081);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header-right { display: flex; gap: 10px; align-items: center; }
+        .header-btn {
+            background: none; border: none; color: white; font-size: 22px; cursor: pointer;
+        }
+        .proxy-indicator {
+            font-size: 10px; padding: 3px 8px;
+            background: rgba(0,255,100,0.15);
+            border: 1px solid rgba(0,255,100,0.3);
+            border-radius: 10px; color: rgba(0,255,100,0.9);
+        }
+
+        /* ───── SEARCH MODAL ───── */
+        .search-modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.97);
+            z-index: 200; display: none; padding: 20px;
+        }
+        .search-modal.active { display: block; }
+        .search-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .search-input {
+            flex: 1; padding: 12px 20px; border: none; border-radius: 25px;
+            background: rgba(255,255,255,0.1); color: white; font-size: 16px; margin-right: 10px;
+        }
+        .search-input::placeholder { color: rgba(255,255,255,0.5); }
+        .close-search { background: none; border: none; color: white; font-size: 26px; cursor: pointer; }
+        .search-filters { display: flex; gap: 10px; margin-bottom: 20px; }
+        .filter-btn {
+            padding: 8px 16px; border: none; border-radius: 20px;
+            background: rgba(255,255,255,0.1); color: white; cursor: pointer; font-size: 14px;
+        }
+        .filter-btn.active { background: #ff0050; }
+        .search-results { height: calc(100vh - 160px); overflow-y: auto; }
+        .search-item {
+            display: flex; padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+        }
+        .search-item:hover { background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .search-thumbnail {
+            width: 80px; height: 60px; background: rgba(255,255,255,0.1);
+            border-radius: 8px; margin-right: 15px; background-size: cover; background-position: center;
+            flex-shrink: 0;
+        }
+        .search-info { flex: 1; }
+        .search-title { font-size: 14px; font-weight: 500; margin-bottom: 5px; line-height: 1.3; }
+        .search-channel { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px; }
+        .search-stats { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+        /* ───── VIDEO CONTAINER ───── */
+        .video-container {
+            position: absolute; top: 60px; left: 0; width: 100%;
+            height: calc(100vh - 60px); overflow: hidden;
+            transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .video-item {
+            width: 100%; height: calc(100vh - 60px);
+            position: relative; background: #000;
+        }
+        .video-iframe { width: 100%; height: 100%; border: none; display: block; }
+
+        /* Черный экран фикс */
+        .iframe-wrapper {
+            position: relative; width: 100%; height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: -60px; left: -1px;
+            width: calc(100% + 2px);
+            height: calc(100% + 120px);
+            border: none;
+        }
+
+        /* ───── OVERLAY ───── */
+        .video-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 20px; z-index: 10;
+        }
+        .video-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; line-height: 1.35; }
+        .video-channel { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 4px; }
+        .video-stats { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+        /* Share bar */
+        .share-bar {
+            display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+        }
+        .share-pill {
+            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px; padding: 5px 12px; font-size: 11px;
+            cursor: pointer; color: white; white-space: nowrap;
+        }
+        .share-pill:hover { background: rgba(255,255,255,0.22); }
+
+        /* ───── SIDE ACTIONS ───── */
+        .side-actions {
+            position: absolute; right: 15px; bottom: 120px; z-index: 20;
+            display: flex; flex-direction: column; align-items: center; gap: 18px;
+        }
+        .action-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            background: none; border: none; color: white; cursor: pointer; font-size: 11px;
+        }
+        .action-icon {
+            width: 46px; height: 46px; background: rgba(255,255,255,0.18);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; backdrop-filter: blur(8px);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .action-btn:hover .action-icon { background: rgba(255,255,255,0.3); transform: scale(1.08); }
+        .action-btn.liked .action-icon { background: rgba(255,0,80,0.4); }
+
+        /* ───── LOADING / ERROR ───── */
+        .loading {
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; height: calc(100vh - 60px); gap: 16px;
+        }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #ff0050; border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-message {
+            text-align: center; padding: 60px 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        .error-title { font-size: 20px; margin-bottom: 12px; }
+        .error-text { font-size: 14px; line-height: 1.6; }
+
+        /* ───── API SETUP ───── */
+        .api-setup {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(18,18,18,0.98); padding: 32px;
+            border-radius: 18px; backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.12);
+            z-index: 300; max-width: 360px; width: 92%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+        .api-setup h3 { margin-bottom: 10px; color: #ff0050; font-size: 18px; }
+        .api-setup p { margin-bottom: 18px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.75); }
+        .api-input {
+            width: 100%; padding: 12px; border: none; border-radius: 10px;
+            background: rgba(255,255,255,0.08); color: white;
+            margin-bottom: 14px; font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .api-input:focus { outline: none; border-color: #ff0050; }
+        .api-buttons { display: flex; gap: 10px; }
+        .api-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; }
+        .api-btn.primary { background: #ff0050; color: white; }
+        .api-btn.secondary { background: rgba(255,255,255,0.1); color: white; }
+        .api-help-link { display: block; text-align: center; margin-top: 14px; font-size: 12px; color: rgba(255,255,255,0.4); cursor: pointer; }
+        .api-help-link:hover { color: #ff0050; }
+
+        /* ───── PROXY STATUS TOAST ───── */
+        .toast {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+            background: rgba(20,20,20,0.95); color: white; padding: 10px 22px;
+            border-radius: 22px; z-index: 1000; font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeInOut 3s forwards;
+            white-space: nowrap;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            75% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ───── SHARE MODAL ───── */
+        .share-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            z-index: 400; display: none; align-items: flex-end;
+        }
+        .share-modal.active { display: flex; }
+        .share-sheet {
+            width: 100%; background: #1a1a1a; border-radius: 20px 20px 0 0;
+            padding: 24px; padding-bottom: 40px;
+        }
+        .share-sheet h4 { margin-bottom: 16px; font-size: 16px; }
+        .share-url-box {
+            background: rgba(255,255,255,0.06); border-radius: 10px;
+            padding: 12px; font-size: 12px; color: rgba(255,255,255,0.6);
+            word-break: break-all; margin-bottom: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .share-actions { display: flex; gap: 10px; }
+        .share-action-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 10px;
+            font-size: 14px; cursor: pointer; font-weight: 600;
+        }
+        .share-action-btn.copy { background: #ff0050; color: white; }
+        .share-action-btn.cancel { background: rgba(255,255,255,0.1); color: white; }
+
+        /* ───── NAV HINT ───── */
+        .nav-hint {
+            position: absolute; right: 50%; bottom: 30px; z-index: 10;
+            transform: translateX(50%);
+            font-size: 22px; animation: bounce 2s infinite;
+            opacity: 0.5; pointer-events: none;
+        }
+        @keyframes bounce {
+            0%,100% { transform: translateX(50%) translateY(0); }
+            50% { transform: translateX(50%) translateY(6px); }
+        }
+
+        @media (max-width: 480px) {
+            .header { padding: 0 14px; }
+            .video-overlay { padding: 14px; }
+            .side-actions { right: 10px; bottom: 90px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- ═══════════════ LANDING ═══════════════ -->
+    <div class="landing" id="landing">
+        <div class="landing-logo">TikTube</div>
+        <div class="landing-tagline">YouTube без VPN</div>
+        <div class="landing-sub">Смотри YouTube-видео в формате TikTok — листай, лайкай и делись. Работает через умный прокси, VPN не нужен.</div>
+
+        <div class="landing-badges">
+            <div class="badge"><span>🚀</span>Без VPN</div>
+            <div class="badge"><span>📱</span>Как TikTok</div>
+            <div class="badge"><span>🔗</span>Shareable ссылки</div>
+            <div class="badge"><span>🌐</span>4 прокси-сервера</div>
+        </div>
+
+        <button class="landing-btn" onclick="enterApp()">▶ Смотреть видео</button>
+        <span class="landing-link" onclick="showApiSetupFromLanding()">У меня есть YouTube API ключ →</span>
+
+        <div class="proxy-status">🟢 Прокси-серверы активны · VPN не требуется</div>
+    </div>
+
+    <!-- ═══════════════ HEADER ═══════════════ -->
+    <div class="header">
+        <div class="logo">TikTube</div>
+        <div class="header-right">
+            <div class="proxy-indicator" id="proxyIndicator">🟢 Proxy</div>
+            <button class="header-btn" onclick="openSearch()" title="Поиск">🔍</button>
+            <button class="header-btn" onclick="openSettings()" title="Настройки">⚙️</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════ SEARCH ═══════════════ -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-header">
+            <input type="text" class="search-input" id="searchInput" placeholder="Поиск видео или каналов...">
+            <button class="close-search" onclick="closeSearch()">×</button>
+        </div>
+        <div class="search-filters">
+            <button class="filter-btn active" data-type="video">Видео</button>
+            <button class="filter-btn" data-type="channel">Каналы</button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- ═══════════════ VIDEO CONTAINER ═══════════════ -->
+    <div class="video-container" id="videoContainer">
+        <div class="loading"><div class="spinner"></div><div style="color:rgba(255,255,255,0.4);font-size:13px">Загрузка...</div></div>
+    </div>
+
+    <!-- ═══════════════ API SETUP ═══════════════ -->
+    <div class="api-setup" id="apiSetup" style="display:none">
+        <h3>🔑 YouTube API ключ</h3>
+        <p>Для поиска и трендов нужен бесплатный API ключ. <span style="color:#ff0050;cursor:pointer" onclick="window.open('api-tutorial.html','_blank')">Как получить →</span></p>
+        <input type="text" class="api-input" id="apiKeyInput" placeholder="AIza...">
+        <div class="api-buttons">
+            <button class="api-btn primary" onclick="saveApiKey()">Сохранить</button>
+            <button class="api-btn secondary" onclick="hideApiSetup()">Отмена</button>
+        </div>
+        <span class="api-help-link" onclick="window.open('api-tutorial.html','_blank')">📖 Подробный туториал как получить API ключ</span>
+    </div>
+
+    <!-- ═══════════════ SHARE MODAL ═══════════════ -->
+    <div class="share-modal" id="shareModal" onclick="closeShareModal()">
+        <div class="share-sheet" onclick="event.stopPropagation()">
+            <h4>🔗 Поделиться видео</h4>
+            <div class="share-url-box" id="shareUrlBox"></div>
+            <div class="share-actions">
+                <button class="share-action-btn copy" onclick="copyShareUrl()">📋 Скопировать ссылку</button>
+                <button class="share-action-btn cancel" onclick="closeShareModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  PROXY CONFIG — список прокси с автопереключением
+// ═══════════════════════════════════════════════
+const PROXIES = [
+    { name: 'Proxy 1', prefix: 'https://proxyvideo.vercel.app/www.youtube.com/embed/' },
+    { name: 'Proxy 2', prefix: 'https://secure-272717.vercel.app/www.youtube.com/embed/' },
+    { name: 'Proxy 3', prefix: 'https://secure-272717.tatnet.app/www.youtube.com/embed/' },
+    { name: 'Proxy 4', prefix: 'https://secure-ridge-22999-537c838d4a8a.herokuapp.com/www.youtube.com/embed/' },
+];
+
+let activeProxyIndex = 0;
+let proxyFailCounts = [0, 0, 0, 0];
+
+function getProxyUrl(videoId, autoplay = 0) {
+    const p = PROXIES[activeProxyIndex];
+    return `${p.prefix}${videoId}?autoplay=${autoplay}&mute=1&controls=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=0`;
+}
+
+function switchProxy() {
+    proxyFailCounts[activeProxyIndex]++;
+    activeProxyIndex = (activeProxyIndex + 1) % PROXIES.length;
+    document.getElementById('proxyIndicator').textContent = `🟡 ${PROXIES[activeProxyIndex].name}`;
+    showToast(`🔄 Переключились на ${PROXIES[activeProxyIndex].name}`);
+    return activeProxyIndex;
+}
+
+// ═══════════════════════════════════════════════
+//  DEEP LINK — UUID-based video sharing
+// ═══════════════════════════════════════════════
+function getShareableUrl(videoId, channelId) {
+    const base = window.location.origin + window.location.pathname;
+    return `${base}?v=${videoId}${channelId ? '&c=' + channelId : ''}`;
+}
+
+function parseUrlParams() {
+    const p = new URLSearchParams(window.location.search);
+    return { videoId: p.get('v'), channelId: p.get('c') };
+}
+
+function pushState(videoId, channelId) {
+    const url = getShareableUrl(videoId, channelId);
+    window.history.replaceState({videoId, channelId}, '', url);
+}
+
+// ═══════════════════════════════════════════════
+//  LANDING
+// ═══════════════════════════════════════════════
+function enterApp() {
+    document.getElementById('landing').classList.add('hidden');
+    app.init();
+}
+function showApiSetupFromLanding() {
+    document.getElementById('landing').classList.add('hidden');
+    document.getElementById('apiSetup').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════
+//  MAIN APP CLASS
+// ═══════════════════════════════════════════════
+class TikTube {
+    constructor() {
+        this.apiKey = localStorage.getItem('youtube_api_key') || '';
+        this.currentVideos = [];
+        this.currentIndex = 0;
+        this.searchType = 'video';
+        this.isLoading = false;
+        this.initialized = false;
+    }
+
+    init() {
+        if (this.initialized) return;
+        this.initialized = true;
+        this.setupEventListeners();
+        this.setupVideoNavigation();
+
+        const { videoId, channelId } = parseUrlParams();
+
+        if (videoId) {
+            // Deep link — load specific video
+            this.loadVideoById(videoId, channelId);
+        } else if (this.apiKey) {
+            this.loadTrendingVideos();
+        } else {
+            this.showNoApiState();
+        }
+    }
+
+    setupEventListeners() {
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', this.debounce(() => {
+            const q = searchInput.value.trim();
+            if (q) this.performSearch(q);
+        }, 500));
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.searchType = e.target.dataset.type;
+                const q = searchInput.value.trim();
+                if (q) this.performSearch(q);
+            });
+        });
+    }
+
+    setupVideoNavigation() {
+        const container = document.getElementById('videoContainer');
+        let startY = 0, startX = 0, isDragging = false;
+
+        container.addEventListener('touchstart', e => {
+            startY = e.touches[0].clientY;
+            startX = e.touches[0].clientX;
+        }, { passive: true });
+
+        container.addEventListener('touchend', e => {
+            const dy = startY - e.changedTouches[0].clientY;
+            const dx = Math.abs(startX - e.changedTouches[0].clientX);
+            if (Math.abs(dy) > 50 && dx < 60) {
+                dy > 0 ? this.nextVideo() : this.prevVideo();
+            }
+        }, { passive: true });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowDown' || e.key === 'j') this.nextVideo();
+            if (e.key === 'ArrowUp' || e.key === 'k') this.prevVideo();
+        });
+
+        // Mouse wheel
+        let wheelCooldown = false;
+        container.addEventListener('wheel', e => {
+            if (wheelCooldown) return;
+            wheelCooldown = true;
+            setTimeout(() => wheelCooldown = false, 600);
+            e.deltaY > 0 ? this.nextVideo() : this.prevVideo();
+        }, { passive: true });
+    }
+
+    async loadTrendingVideos() {
+        if (!this.apiKey) { this.showNoApiState(); return; }
+        this.showLoading();
+        try {
+            const res = await fetch(
+                `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=RU&maxResults=50&key=${this.apiKey}`
+            );
+            if (!res.ok) throw new Error(res.status);
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            this.currentVideos = data.items || [];
+            this.currentIndex = 0;
+            this.displayVideos();
+        } catch (err) {
+            console.error(err);
+            this.showError('Ошибка загрузки', 'Проверьте API ключ и попробуйте снова');
+        }
+    }
+
+    async loadVideoById(videoId, channelId) {
+        this.showLoading();
+        if (this.apiKey) {
+            try {
+                const res = await fetch(
+                    `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${this.apiKey}`
+                );
+                const data = await res.json();
+                if (data.items && data.items.length > 0) {
+                    this.currentVideos = data.items;
+                    // Also load more from same channel if channelId provided
+                    if (channelId) await this.loadMoreFromChannel(channelId, videoId);
+                    this.currentIndex = 0;
+                    this.displayVideos();
+                    return;
+                }
+            } catch(e) {}
+        }
+        // Fallback: show video without metadata
+        this.currentVideos = [{ id: videoId, snippet: { title: 'Видео', channelTitle: '', channelId: channelId||'' }, statistics: {} }];
+        this.currentIndex = 0;
+        this.displayVideos();
+    }
+
+    async loadMoreFromChannel(channelId, excludeId) {
+        if (!this.apiKey) return;
+        try {
+            const res = await fetch(
+                `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&maxResults=20&key=${this.apiKey}`
+            );
+            const data = await res.json();
+            if (data.items) {
+                const ids = data.items.map(i => i.id.videoId).filter(id => id && id !== excludeId).join(',');
+                if (!ids) return;
+                const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${ids}&key=${this.apiKey}`);
+                const vData = await vRes.json();
+                if (vData.items) this.currentVideos = [...this.currentVideos, ...vData.items];
+            }
+        } catch(e) {}
+    }
+
+    async performSearch(query) {
+        if (!this.apiKey) { showToast('⚙️ Нужен API ключ для поиска'); openSettings(); return; }
+        const container = document.getElementById('searchResults');
+        container.innerHTML = '<div class="loading" style="height:auto;padding:30px"><div class="spinner"></div></div>';
+        try {
+            const type = this.searchType === 'video' ? 'video' : 'channel';
+            const res = await fetch(
+                `https://www.googleapis.com/youtube/v3/search?part=snippet&type=${type}&q=${encodeURIComponent(query)}&maxResults=25&order=relevance&key=${this.apiKey}`
+            );
+            const data = await res.json();
+            this.displaySearchResults(data.items || []);
+        } catch(e) {
+            container.innerHTML = '<div class="error-message">Ошибка поиска</div>';
+        }
+    }
+
+    displaySearchResults(items) {
+        const container = document.getElementById('searchResults');
+        if (!items.length) { container.innerHTML = '<div class="error-message">Ничего не найдено</div>'; return; }
+        container.innerHTML = items.map(item => {
+            const thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
+            const id = item.id.videoId || item.id.channelId;
+            return `
+                <div class="search-item" onclick="app.selectSearchResult('${id}','${this.searchType}')">
+                    <div class="search-thumbnail" style="background-image:url('${thumb}')"></div>
+                    <div class="search-info">
+                        <div class="search-title">${escHtml(item.snippet.title)}</div>
+                        <div class="search-channel">${escHtml(item.snippet.channelTitle || '')}</div>
+                        <div class="search-stats">${this.searchType === 'video' ? '▶ Видео' : '📺 Канал'}</div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    async selectSearchResult(id, type) {
+        closeSearch();
+        this.showLoading();
+        try {
+            if (type === 'video') {
+                const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${id}&key=${this.apiKey}`);
+                const data = await res.json();
+                this.currentVideos = data.items || [];
+            } else {
+                const sRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${id}&type=video&order=date&maxResults=50&key=${this.apiKey}`);
+                const sData = await sRes.json();
+                const ids = (sData.items || []).map(i => i.id.videoId).filter(Boolean).join(',');
+                if (ids) {
+                    const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${ids}&key=${this.apiKey}`);
+                    const vData = await vRes.json();
+                    this.currentVideos = vData.items || [];
+                }
+            }
+            this.currentIndex = 0;
+            this.displayVideos();
+        } catch(e) {
+            this.showError('Ошибка', 'Не удалось загрузить видео');
+        }
+    }
+
+    displayVideos() {
+        const container = document.getElementById('videoContainer');
+        if (!this.currentVideos.length) { this.showError('Нет видео', 'Попробуйте другой запрос'); return; }
+
+        container.innerHTML = this.currentVideos.map((video, index) => {
+            const videoId = video.id;
+            const s = video.snippet || {};
+            const st = video.statistics || {};
+            const views = fmtNum(st.viewCount);
+            const likes = fmtNum(st.likeCount);
+            const proxyUrl = getProxyUrl(videoId, index === 0 ? 1 : 0);
+
+            return `
+            <div class="video-item" data-index="${index}" data-videoid="${videoId}" data-channelid="${s.channelId||''}">
+                <div class="iframe-wrapper">
+                    <iframe
+                        class="video-iframe"
+                        src="${proxyUrl}"
+                        allowfullscreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        loading="${index < 2 ? 'eager' : 'lazy'}"
+                        onerror="handleIframeError(this, '${videoId}')">
+                    </iframe>
+                </div>
+
+                <div class="video-overlay">
+                    <div class="video-title">${escHtml(s.title || 'Видео')}</div>
+                    <div class="video-channel">📺 ${escHtml(s.channelTitle || '')}</div>
+                    <div class="video-stats">${views ? views + ' просмотров · ' + likes + ' лайков' : ''}</div>
+                    <div class="share-bar">
+                        <span class="share-pill" onclick="app.shareVideo(${index})">🔗 Поделиться</span>
+                        <span class="share-pill" onclick="app.openOnYouTube(${index})">▶ YouTube</span>
+                        ${s.channelId ? `<span class="share-pill" onclick="app.shareChannel(${index})">📺 Канал</span>` : ''}
+                    </div>
+                </div>
+
+                <div class="side-actions">
+                    <button class="action-btn" id="like-${index}" onclick="app.toggleLike(${index})">
+                        <div class="action-icon">❤️</div>
+                        <span>Лайк</span>
+                    </button>
+                    <button class="action-btn" onclick="app.shareVideo(${index})">
+                        <div class="action-icon">🔗</div>
+                        <span>Поделиться</span>
+                    </button>
+                    <button class="action-btn" onclick="app.switchProxyForVideo(${index})">
+                        <div class="action-icon">🔄</div>
+                        <span>Прокси</span>
+                    </button>
+                    ${index < this.currentVideos.length - 1 ? '<div class="nav-hint">👇</div>' : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+        this.updatePosition();
+
+        // Update URL to current video
+        const v = this.currentVideos[0];
+        if (v) pushState(v.id, v.snippet?.channelId || '');
+    }
+
+    updatePosition() {
+        const container = document.getElementById('videoContainer');
+        const h = window.innerHeight - 60;
+        container.style.transform = `translateY(${-this.currentIndex * h}px)`;
+
+        // Auto-play current, pause others
+        document.querySelectorAll('.video-iframe').forEach((iframe, i) => {
+            try {
+                const src = iframe.src;
+                const newSrc = src.replace(/autoplay=\d/, `autoplay=${i === this.currentIndex ? 1 : 0}`);
+                if (newSrc !== src) iframe.src = newSrc;
+            } catch(e) {}
+        });
+
+        // Update URL
+        const v = this.currentVideos[this.currentIndex];
+        if (v) pushState(v.id, v.snippet?.channelId || '');
+    }
+
+    nextVideo() {
+        if (this.currentIndex < this.currentVideos.length - 1) {
+            this.currentIndex++;
+            this.updatePosition();
+        }
+    }
+
+    prevVideo() {
+        if (this.currentIndex > 0) {
+            this.currentIndex--;
+            this.updatePosition();
+        }
+    }
+
+    toggleLike(index) {
+        const btn = document.getElementById(`like-${index}`);
+        const icon = btn.querySelector('.action-icon');
+        const isLiked = btn.classList.toggle('liked');
+        icon.style.background = isLiked ? 'rgba(255,0,80,0.5)' : 'rgba(255,255,255,0.18)';
+        showToast(isLiked ? '❤️ Лайк!' : '💔 Убрали лайк');
+    }
+
+    shareVideo(index) {
+        const v = this.currentVideos[index];
+        const url = getShareableUrl(v.id, v.snippet?.channelId || '');
+        document.getElementById('shareUrlBox').textContent = url;
+        document.getElementById('shareModal').shareUrl = url;
+        document.getElementById('shareModal').classList.add('active');
+    }
+
+    shareChannel(index) {
+        const v = this.currentVideos[index];
+        const url = getShareableUrl('', v.snippet?.channelId || '');
+        document.getElementById('shareUrlBox').textContent = url;
+        document.getElementById('shareModal').shareUrl = url;
+        document.getElementById('shareModal').classList.add('active');
+    }
+
+    openOnYouTube(index) {
+        const v = this.currentVideos[index];
+        window.open(`https://youtube.com/watch?v=${v.id}`, '_blank');
+    }
+
+    switchProxyForVideo(index) {
+        switchProxy();
+        // Reload iframe with new proxy
+        const item = document.querySelector(`[data-index="${index}"]`);
+        if (!item) return;
+        const videoId = item.dataset.videoid;
+        const iframe = item.querySelector('.video-iframe');
+        if (iframe) iframe.src = getProxyUrl(videoId, index === this.currentIndex ? 1 : 0);
+    }
+
+    showNoApiState() {
+        document.getElementById('videoContainer').innerHTML = `
+            <div class="error-message">
+                <div style="font-size:48px;margin-bottom:16px">🔑</div>
+                <div class="error-title">Нужен YouTube API ключ</div>
+                <div class="error-text">Для загрузки видео нужен бесплатный ключ YouTube Data API v3.<br><br>
+                    <span style="color:#ff0050;cursor:pointer" onclick="openSettings()">Настроить API ключ →</span><br><br>
+                    <span style="color:rgba(255,255,255,0.4);cursor:pointer;font-size:12px" onclick="window.open('api-tutorial.html','_blank')">📖 Как получить ключ (туториал)</span>
+                </div>
+            </div>`;
+    }
+
+    showLoading() {
+        document.getElementById('videoContainer').innerHTML =
+            '<div class="loading"><div class="spinner"></div><div style="color:rgba(255,255,255,0.4);font-size:13px">Загрузка...</div></div>';
+    }
+
+    showError(title, msg) {
+        document.getElementById('videoContainer').innerHTML =
+            `<div class="error-message"><div style="font-size:36px;margin-bottom:12px">😕</div><div class="error-title">${title}</div><div class="error-text">${msg}</div></div>`;
+    }
+
+    debounce(fn, wait) {
+        let t;
+        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+    }
+}
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+}
+
+function fmtNum(n) {
+    const x = parseInt(n) || 0;
+    if (x >= 1e6) return (x/1e6).toFixed(1) + 'M';
+    if (x >= 1e3) return (x/1e3).toFixed(1) + 'K';
+    return x ? x.toString() : '';
+}
+
+function handleIframeError(iframe, videoId) {
+    console.warn('Iframe error for', videoId, '— switching proxy');
+    switchProxy();
+    const index = parseInt(iframe.closest('.video-item')?.dataset.index || '0');
+    iframe.src = getProxyUrl(videoId, index === app.currentIndex ? 1 : 0);
+}
+
+function showToast(msg) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+}
+
+// ═══════════════════════════════════════════════
+//  GLOBAL FUNCTIONS (onclick handlers)
+// ═══════════════════════════════════════════════
+function openSearch() { document.getElementById('searchModal').classList.add('active'); document.getElementById('searchInput').focus(); }
+function closeSearch() { document.getElementById('searchModal').classList.remove('active'); document.getElementById('searchInput').value = ''; document.getElementById('searchResults').innerHTML = ''; }
+
+function openSettings() { document.getElementById('apiSetup').style.display = 'block'; const k = localStorage.getItem('youtube_api_key'); if (k) document.getElementById('apiKeyInput').value = k; }
+function hideApiSetup() { document.getElementById('apiSetup').style.display = 'none'; }
+
+function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) { showToast('⚠️ Введите API ключ'); return; }
+    localStorage.setItem('youtube_api_key', key);
+    app.apiKey = key;
+    hideApiSetup();
+    app.loadTrendingVideos();
+    showToast('✅ API ключ сохранён');
+}
+
+function closeShareModal() { document.getElementById('shareModal').classList.remove('active'); }
+function copyShareUrl() {
+    const url = document.getElementById('shareModal').shareUrl || document.getElementById('shareUrlBox').textContent;
+    if (navigator.share) {
+        navigator.share({ title: 'TikTube', url });
+    } else {
+        navigator.clipboard.writeText(url).then(() => { showToast('✅ Ссылка скопирована!'); closeShareModal(); });
+    }
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+let app;
+document.addEventListener('DOMContentLoaded', () => {
+    app = new TikTube();
+
+    // Check deep link — if video param, skip landing
+    const { videoId } = parseUrlParams();
+    if (videoId) {
+        document.getElementById('landing').classList.add('hidden');
+        app.init();
+    }
+});
+</script>
+</body>
+</html>
