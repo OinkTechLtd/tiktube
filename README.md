@@ -1,80 +1,80 @@
 # TikTube — YouTube без VPN 🎬
 
-> Смотри YouTube в формате TikTok. Умный прокси с автопереключением, shareable ссылки, без VPN.
+> Смотри YouTube в формате TikTok — листай видео свайпом, делись ссылками, без VPN.
+
+[![Deploy to GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-blue?logo=github)](https://pages.github.com)
 
 ---
 
-## ✨ Что умеет
+## ✨ Возможности
 
-- 📱 **TikTok-лента** — вертикальный скролл, свайп вверх/вниз, колёсико мыши, клавиши ↑↓
-- 🚀 **4 прокси-сервера** с автопереключением — если один не работает, пробует следующий
-- 🖼️ **Умный плеер** — показывает превью пока грузится, плавный fade-in без чёрного экрана
-- 🔗 **Shareable UUID-ссылки** — `?v=VIDEO_ID` — видео открывается у любого пользователя
-- 🔍 **Поиск** видео и каналов через YouTube Data API v3
-- 📖 **Туториал** как получить API ключ с иллюстрациями
-- 📄 **Docs** — FAQ, Политика конфиденциальности, Условия использования
+- 📱 **TikTok-интерфейс** — вертикальная лента, свайп вверх/вниз
+- 🚀 **Без VPN** — видео грузятся через 4 прокси-сервера с автопереключением
+- 🔗 **Shareable ссылки** — у каждого видео свой URL вида `?v=VIDEO_ID`, можно делиться
+- 🔄 **Авто-прокси** — если один прокси не работает, автоматически переключается на следующий
+- 🔍 **Поиск** — поиск видео и каналов через YouTube API
+- 📖 **Туториал** — встроенная страница как получить API ключ шаг за шагом
 
 ---
 
-## 📁 Структура
+## 🗂 Структура проекта
 
 ```
 tiktube/
-├── index.html           ← главное приложение
-├── api-tutorial.html    ← туториал: как получить API ключ
-├── docs/
-│   ├── faq.html         ← часто задаваемые вопросы
-│   ├── privacy.html     ← политика конфиденциальности
-│   └── terms.html       ← условия использования
-└── README.md
+├── index.html          # Главное приложение
+├── api-tutorial.html   # Туториал: как получить YouTube API ключ
+└── README.md           # Этот файл
 ```
 
 ---
 
 ## 🚀 Деплой на GitHub Pages
 
+### 1. Загрузи файлы на GitHub
+
 ```bash
-# 1. Инициализируй репозиторий
 git init
 git add .
-git commit -m "🚀 Initial TikTube release"
-
-# 2. Создай репо на GitHub и запушь
-git remote add origin https://github.com/ТВО_ЛОГИН/tiktube.git
+git commit -m "Initial TikTube release"
+git remote add origin https://github.com/ТВОЙ_ЛОГИН/tiktube.git
 git push -u origin main
-
-# 3. Включи Pages: Settings → Pages → Source: main / (root) → Save
-# Сайт будет доступен на: https://ТВО_ЛОГИН.github.io/tiktube/
 ```
+
+### 2. Включи GitHub Pages
+
+1. Открой репозиторий на GitHub
+2. Зайди в **Settings → Pages**
+3. В поле **Source** выбери `main` ветку, папка `/` (root)
+4. Нажми **Save**
+5. Через 1-2 минуты сайт появится на `https://ТВОЙ_ЛОГИН.github.io/tiktube/`
+
+---
+
+## 🔑 Получить YouTube API ключ
+
+Открой [`api-tutorial.html`](api-tutorial.html) — там подробный туториал на русском языке.
+
+**Кратко:**
+1. Зайди на [console.cloud.google.com](https://console.cloud.google.com)
+2. Создай проект
+3. Включи **YouTube Data API v3**
+4. Создай **API key** в Credentials
+5. Вставь ключ в настройки TikTube (кнопка ⚙️)
 
 ---
 
 ## 🌐 Прокси-серверы
 
-| # | Сервер | Тип |
-|---|--------|-----|
-| 1 | proxyvideo.vercel.app | Vercel |
-| 2 | secure-272717.vercel.app | Vercel |
-| 3 | secure-272717.tatnet.app | Custom |
-| 4 | secure-ridge-22999-537c838d4a8a.herokuapp.com | Heroku |
-| 5 | youtube-nocookie.com | Fallback (прямой) |
+Приложение использует 4 прокси с автопереключением:
 
-Если прокси не работает — нажми 🔄 или он переключится автоматически через 7 секунд.
+| # | Прокси | Статус |
+|---|--------|--------|
+| 1 | proxyvideo.vercel.app | 🟢 |
+| 2 | secure-272717.vercel.app | 🟢 |
+| 3 | secure-272717.tatnet.app | 🟢 |
+| 4 | secure-ridge-22999-537c838d4a8a.herokuapp.com | 🟢 |
 
----
-
-## 🔑 YouTube API ключ
-
-Нужен для поиска и загрузки трендов. Полностью бесплатный.
-
-→ [Подробный туториал](api-tutorial.html) с иллюстрациями
-
-Кратко:
-1. [console.cloud.google.com](https://console.cloud.google.com)
-2. Создать проект
-3. APIs & Services → Library → включить **YouTube Data API v3**
-4. Credentials → Create → API key
-5. Вставить в ⚙️ настройки TikTube
+Если прокси не работает — нажми 🔄 на видео или он переключится автоматически.
 
 ---
 
@@ -82,13 +82,13 @@ git push -u origin main
 
 Каждое видео получает уникальную ссылку:
 ```
-https://твой-ник.github.io/tiktube/?v=dQw4w9WgXcQ&c=UCuAXFkgsw1L7xaCfnd5JJOw
+https://твой-сайт.github.io/tiktube/?v=dQw4w9WgXcQ
 ```
 
-Открывается без API ключа — прямо к нужному видео.
+При переходе по ссылке видео откроется сразу — даже без API ключа.
 
 ---
 
 ## 📋 Лицензия
 
-MIT — бери, делай, распространяй с указанием авторства.
+MIT — делай что хочешь 🙂
