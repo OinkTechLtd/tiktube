@@ -548,17 +548,22 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 //  Если прокси не грузится за N секунд → следующий
 // ═══════════════════════════════════════════════
 const PROXIES = [
-    // Попытка через прокси (они перенаправляют на yt-nocookie)
-    { name:'Proxy 1', host:'proxyvideo.vercel.app',   url: id => `https://proxyvideo.vercel.app/www.youtube-nocookie.com/embed/${id}` },
-    { name:'Proxy 2', host:'secure-272717.vercel.app', url: id => `https://secure-272717.vercel.app/www.youtube-nocookie.com/embed/${id}` },
-    { name:'Proxy 3', host:'secure-272717.tatnet.app', url: id => `https://secure-272717.tatnet.app/www.youtube-nocookie.com/embed/${id}` },
-    { name:'Proxy 4', host:'secure-ridge-22999-537c838d4a8a.herokuapp.com', url: id => `https://secure-ridge-22999-537c838d4a8a.herokuapp.com/www.youtube-nocookie.com/embed/${id}` },
-    // Финальный fallback — прямой nocookie embed (работает в большинстве регионов)
+    // По просьбе: отдельный прокси-эндпоинт формата /embed/:id
+    { name:'Proxy Xi', host:'youtube-proxy-xi.vercel.app', url: id => `https://youtube-proxy-xi.vercel.app/embed/${id}` },
+
+    // Цепочка резервных прокси (yt-nocookie внутри)
+    { name:'Proxy Vercel A', host:'proxyvideo.vercel.app', url: id => `https://proxyvideo.vercel.app/www.youtube-nocookie.com/embed/${id}` },
+    { name:'Proxy Vercel B', host:'secure-272717.vercel.app', url: id => `https://secure-272717.vercel.app/www.youtube-nocookie.com/embed/${id}` },
+    { name:'Proxy Tatnet', host:'secure-272717.tatnet.app', url: id => `https://secure-272717.tatnet.app/www.youtube-nocookie.com/embed/${id}` },
+    { name:'Proxy Heroku', host:'secure-ridge-22999-537c838d4a8a.herokuapp.com', url: id => `https://secure-ridge-22999-537c838d4a8a.herokuapp.com/www.youtube-nocookie.com/embed/${id}` },
+
+    // Дополнительные рабочие варианты embed (иногда проходят, когда прокси режутся)
+    { name:'Direct (youtube.com)', host:'youtube.com', url: id => `https://www.youtube.com/embed/${id}`, direct:true },
     { name:'Direct (nocookie)', host:'youtube-nocookie.com', url: id => `https://www.youtube-nocookie.com/embed/${id}`, direct:true },
 ];
 
 const EMBED_PARAMS = 'autoplay=1&mute=1&controls=1&rel=0&modestbranding=1&playsinline=1&fs=1&iv_load_policy=3&enablejsapi=1';
-const TIMEOUT_MS  = 7000; // если iframe не ожидает за 7с — пробуем следующий
+const TIMEOUT_MS  = 11000; // часть прокси стартует медленно, даём больше времени
 
 let activeProxy   = 0;
 let proxyAttempts = {}; // videoId → attempt index
@@ -838,10 +843,21 @@ ${idx < this.videos.length-1 ? '<div class="swipe-hint">👇</div>' : ''}
             pb,
             ready: false,
             commandTimer: null,
+            readyFallbackTimer: null,
         };
 
         iframe.onload = () => {
             this.startPlayerHandshake(idx);
+
+            // Некоторые прокси не прокидывают postMessage события YouTube API,
+            // но сам embed уже работает. В таком случае считаем плеер готовым чуть позже.
+            const session = playerSessions[idx];
+            if(!session) return;
+            session.readyFallbackTimer = setTimeout(() => {
+                if(playerSessions[idx] && !playerSessions[idx].ready) {
+                    this.markPlayerReady(idx);
+                }
+            }, 1800);
         };
 
         iframe.onerror = () => {
@@ -904,6 +920,7 @@ ${idx < this.videos.length-1 ? '<div class="swipe-hint">👇</div>' : ''}
         if(!s) return;
         clearTimeout(s.timeout);
         if(s.commandTimer) clearInterval(s.commandTimer);
+        if(s.readyFallbackTimer) clearTimeout(s.readyFallbackTimer);
         delete playerSessions[idx];
     },
 
