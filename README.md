@@ -3,6 +3,7 @@
 > Смотри YouTube в формате TikTok — листай видео свайпом, делись ссылками, без VPN.
 
 [![Deploy to GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-blue?logo=github)](https://pages.github.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
