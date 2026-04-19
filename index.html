@@ -1,918 +1,1183 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TikTube — YouTube без VPN</title>
-    <meta name="description" content="Смотри YouTube без VPN в формате TikTok. Умный прокси, шаринг видео.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>
-:root {
-    --red:    #ff0040;
-    --red2:   #ff4d6d;
-    --bg:     #060606;
-    --border: rgba(255,255,255,0.08);
-    --muted:  rgba(255,255,255,0.45);
-    --green:  #00ff87;
-    --hdr:    56px;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TikTube — YouTube без VPN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────
+   BASE
+───────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#ff0040;
+  --accent2:#ff4d6d;
+  --bg:#080808;
+  --surface:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.09);
+  --text:#f2f2f2;
+  --muted:rgba(255,255,255,0.42);
+  --green:#00e676;
+  --hh:52px; /* header height */
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height:100%; overflow:hidden; background:var(--bg); color:#f0f0f0; font-family:'Manrope',sans-serif; }
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 
-/* ─── LANDING ─── */
-#landing {
-    position:fixed; inset:0; z-index:900;
-    background:radial-gradient(ellipse 130% 80% at 50% 110%, #280016 0%, var(--bg) 65%);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; padding:30px 24px; overflow-y:auto;
+/* ─────────────────────────────────────
+   LANDING PAGE
+───────────────────────────────────── */
+#landing{
+  position:fixed;inset:0;z-index:800;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;text-align:center;overflow-y:auto;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(255,0,64,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255,77,109,.08) 0%, transparent 60%),
+    #080808;
 }
-#landing.gone { display:none; }
-.land-logo { font-size:54px; font-weight:900; letter-spacing:-2px; background:linear-gradient(135deg,#fff 0%,var(--red2) 55%,var(--red) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
-.land-tag  { font-size:19px; font-weight:700; color:rgba(255,255,255,.85); margin-bottom:10px; }
-.land-sub  { font-size:14px; color:var(--muted); max-width:360px; line-height:1.7; margin-bottom:32px; }
-.land-pills { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:32px; }
-.pill   { background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:99px; padding:7px 15px; font-size:12px; color:rgba(255,255,255,.6); font-weight:500; }
-.pill-g { border-color:rgba(0,255,135,.25); color:rgba(0,255,135,.8); }
-.land-cta { width:100%; max-width:300px; background:linear-gradient(135deg,var(--red),var(--red2)); color:#fff; border:none; border-radius:99px; padding:17px 0; font-size:16px; font-weight:800; cursor:pointer; letter-spacing:.3px; box-shadow:0 8px 30px rgba(255,0,64,.35); transition:transform .15s,box-shadow .15s; margin-bottom:14px; }
-.land-cta:hover { transform:scale(1.03); box-shadow:0 12px 40px rgba(255,0,64,.5); }
-.land-link { font-size:13px; color:var(--muted); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
-.land-link:hover { color:var(--red2); }
-.proxy-badge { margin-top:26px; display:flex; align-items:center; gap:8px; background:rgba(0,255,135,.07); border:1px solid rgba(0,255,135,.18); border-radius:99px; padding:9px 18px; font-size:12px; color:rgba(0,255,135,.8); font-weight:600; }
-.dot-live { width:8px; height:8px; border-radius:50%; background:var(--green); animation:blink 2s infinite; }
-@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
-.land-footer { margin-top:28px; display:flex; flex-wrap:wrap; gap:12px; justify-content:center; font-size:11px; }
-.land-footer a { color:rgba(255,255,255,.25); text-decoration:none; transition:color .15s; }
-.land-footer a:hover { color:rgba(255,255,255,.6); }
+#landing.gone{display:none}
 
-/* ─── HEADER ─── */
-.hdr { position:fixed; top:0; width:100%; height:var(--hdr); background:rgba(6,6,6,.92); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); z-index:200; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
-.hdr-logo { font-size:20px; font-weight:900; letter-spacing:-.5px; background:linear-gradient(135deg,#fff,var(--red2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.hdr-right { display:flex; align-items:center; gap:6px; }
-.hdr-pill { font-size:10px; font-weight:700; padding:3px 9px; border-radius:99px; background:rgba(0,255,135,.12); border:1px solid rgba(0,255,135,.22); color:rgba(0,255,135,.85); letter-spacing:.3px; }
-.hdr-btn { width:36px; height:36px; background:rgba(255,255,255,.07); border:none; border-radius:50%; color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
-.hdr-btn:hover { background:rgba(255,255,255,.14); }
-
-/* ─── VIEWPORT ─── */
-#viewport { position:fixed; top:var(--hdr); left:0; right:0; bottom:0; overflow:hidden; }
-
-/* ─── FEED ─── */
-#feed { position:absolute; top:0; left:0; width:100%; will-change:transform; transition:transform .33s cubic-bezier(.4,0,.2,1); }
-#feed.no-anim { transition:none !important; }
-
-/* ─── SLIDES (overlay info only — no iframe inside) ─── */
-.slide { position:absolute; left:0; width:100%; background:transparent; overflow:hidden; }
-
-/* ─── PERSISTENT PLAYER (fixed, ONE iframe for all videos) ─── */
-#playerHost {
-    position:fixed; top:var(--hdr); left:0; right:0; bottom:0;
-    z-index:5; background:#000; overflow:hidden;
+.land-eyebrow{
+  font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--accent2);margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;justify-content:center;
 }
-/* blurred bg */
-#posterBg { position:absolute; inset:0; background:#000 center/cover no-repeat; filter:blur(22px) brightness(.3); transform:scale(1.1); z-index:0; transition:background-image .3s; }
-/* poster layer */
-#poster { position:absolute; inset:0; z-index:1; transition:opacity .4s; }
-#poster.hidden { opacity:0; pointer-events:none; }
-.poster-inner { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
-.poster-img { width:min(92vw,420px); aspect-ratio:16/9; object-fit:cover; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.7); display:block; }
-.play-big { position:absolute; width:72px; height:72px; background:rgba(255,0,64,.9); border:none; border-radius:50%; color:#fff; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(255,0,64,.5); transition:transform .12s,background .12s; z-index:10; }
-.play-big:hover { transform:scale(1.08); }
-.play-big.gone { display:none; }
-/* spinner */
-#playerSpinner { position:absolute; inset:0; z-index:3; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; pointer-events:none; opacity:0; transition:opacity .2s; }
-#playerSpinner.show { opacity:1; }
-.spin { width:38px; height:38px; border-radius:50%; border:3px solid rgba(255,255,255,.1); border-top-color:var(--red); animation:spin .85s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
-.spin-lbl { font-size:12px; color:var(--muted); font-weight:600; }
-/* error */
-#playerError { position:absolute; inset:0; z-index:4; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; gap:12px; background:rgba(0,0,0,.7); }
-#playerError.show { display:flex; }
-.err-icon  { font-size:44px; }
-.err-title { font-size:18px; font-weight:800; }
-.err-text  { font-size:13px; color:var(--muted); line-height:1.6; }
-.err-btn   { background:var(--red); color:#fff; border:none; border-radius:99px; padding:11px 28px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Manrope',sans-serif; margin-top:4px; }
-/* the ONE iframe */
-#ytFrame {
-    position:absolute;
-    /* pull up/down to hide YouTube's own black bars (~60px top+bottom) */
-    top:-62px; left:0; width:100%; height:calc(100% + 124px);
-    border:none; background:#000; z-index:2;
-    opacity:0; transition:opacity .5s;
-    pointer-events:none;
+.land-eyebrow::before,.land-eyebrow::after{content:'';flex:1;max-width:40px;height:1px;background:rgba(255,77,109,.3)}
+
+.land-logo{
+  font-size:64px;font-weight:900;letter-spacing:-3px;line-height:1;
+  background:linear-gradient(135deg,#fff 30%,var(--accent2) 65%,var(--accent) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:12px;
 }
-#ytFrame.ready { opacity:1; pointer-events:auto; }
-/* proxy label */
-#proxyLabel { position:absolute; top:10px; left:10px; z-index:20; font-size:10px; font-weight:700; letter-spacing:.5px; background:rgba(0,0,0,.65); border:1px solid var(--border); border-radius:99px; padding:4px 10px; color:var(--muted); pointer-events:none; }
+.land-sub{font-size:15px;color:rgba(255,255,255,.55);max-width:340px;line-height:1.7;margin-bottom:36px}
 
-/* ─── SLIDE OVERLAYS (z above playerHost) ─── */
-.slide-overlay {
-    position:absolute; bottom:0; left:0; right:0;
-    background:linear-gradient(transparent 0%,rgba(0,0,0,.7) 60%,rgba(0,0,0,.9) 100%);
-    padding:16px 16px 20px; z-index:30; pointer-events:none;
+/* feature grid */
+.land-features{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  max-width:340px;width:100%;margin-bottom:36px;
 }
-.slide-overlay * { pointer-events:auto; }
-.ov-ch    { font-size:11px; color:rgba(255,255,255,.55); font-weight:600; margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px; }
-.ov-title { font-size:15px; font-weight:700; line-height:1.4; margin-bottom:5px; }
-.ov-stats { font-size:11px; color:var(--muted); margin-bottom:10px; }
-.ov-chips { display:flex; gap:7px; flex-wrap:wrap; }
-.chip     { font-size:11px; font-weight:700; padding:5px 12px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); border-radius:99px; cursor:pointer; color:#fff; white-space:nowrap; transition:background .15s; }
-.chip:hover { background:rgba(255,255,255,.2); }
-.chip-red { background:rgba(255,0,64,.25); border-color:rgba(255,0,64,.4); }
-.slide-side { position:absolute; right:12px; bottom:90px; z-index:30; display:flex; flex-direction:column; align-items:center; gap:20px; }
-.sa { display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; cursor:pointer; color:#fff; }
-.sa-icon { width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; font-size:19px; border:1px solid rgba(255,255,255,.1); transition:background .15s,transform .1s; }
-.sa:hover .sa-icon { background:rgba(255,255,255,.25); transform:scale(1.08); }
-.sa.on .sa-icon { background:rgba(255,0,64,.4); border-color:rgba(255,0,64,.5); }
-.sa-lbl { font-size:10px; color:rgba(255,255,255,.55); font-weight:600; }
-.swipe-hint { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:30; font-size:22px; opacity:.4; pointer-events:none; animation:bob 2s infinite; }
-@keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(5px)} }
+.feat{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:14px;padding:14px 12px;text-align:left;
+}
+.feat-icon{font-size:20px;margin-bottom:6px;display:block}
+.feat-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.feat-desc{font-size:11px;color:var(--muted);line-height:1.4}
 
-/* ─── STATE SCREEN ─── */
-#stateScreen { position:fixed; top:var(--hdr); left:0; right:0; bottom:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; text-align:center; padding:30px; z-index:150; background:var(--bg); }
-.state-icon  { font-size:52px; }
-.state-title { font-size:22px; font-weight:900; }
-.state-text  { font-size:14px; color:var(--muted); line-height:1.6; white-space:pre-wrap; }
-.state-btn   { background:var(--red); color:#fff; border:none; border-radius:99px; padding:13px 32px; font-size:15px; font-weight:800; cursor:pointer; font-family:'Manrope',sans-serif; margin-top:4px; }
+.land-btn{
+  width:100%;max-width:320px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;border-radius:16px;padding:18px 0;
+  font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.2px;
+  box-shadow:0 8px 32px rgba(255,0,64,.3);
+  transition:transform .12s,box-shadow .2s;
+  margin-bottom:12px;
+}
+.land-btn:hover{transform:scale(1.02);box-shadow:0 12px 40px rgba(255,0,64,.45)}
+.land-btn:active{transform:scale(.98)}
 
-/* ─── SEARCH ─── */
-.modal { position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:400; display:none; flex-direction:column; }
-.modal.open { display:flex; }
-.modal-hdr { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
-.modal-inp { flex:1; background:rgba(255,255,255,.08); border:1px solid var(--border); border-radius:99px; padding:11px 18px; color:#fff; font-size:15px; font-family:'Manrope',sans-serif; }
-.modal-inp:focus { outline:none; border-color:var(--red2); }
-.modal-inp::placeholder { color:var(--muted); }
-.modal-close { width:36px; height:36px; background:rgba(255,255,255,.07); border:none; border-radius:50%; color:#fff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.filter-row { display:flex; gap:8px; padding:12px 16px; }
-.fbtn { padding:7px 16px; border:1px solid var(--border); border-radius:99px; background:rgba(255,255,255,.06); color:rgba(255,255,255,.7); font-size:13px; cursor:pointer; font-family:'Manrope',sans-serif; font-weight:600; transition:all .15s; }
-.fbtn.on { background:var(--red); border-color:var(--red); color:#fff; }
-.results { flex:1; overflow-y:auto; }
-.ri { display:flex; gap:12px; padding:12px 16px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,.04); transition:background .12s; }
-.ri:hover { background:rgba(255,255,255,.04); }
-.ri-thumb { width:88px; height:60px; border-radius:8px; background:#111; flex-shrink:0; background-size:cover; background-position:center; }
-.ri-title { font-size:13px; font-weight:700; line-height:1.35; margin-bottom:4px; }
-.ri-ch    { font-size:11px; color:var(--muted); }
+.land-secondary{
+  font-size:13px;color:var(--muted);cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px;transition:color .15s;
+  margin-bottom:28px;
+}
+.land-secondary:hover{color:var(--accent2)}
 
-/* ─── SETTINGS DRAWER ─── */
-.drw-bg { position:fixed; inset:0; z-index:499; background:rgba(0,0,0,.6); display:none; }
-.drw-bg.open { display:block; }
-.drw { position:fixed; bottom:0; left:0; right:0; z-index:500; background:#141414; border-radius:22px 22px 0 0; border:1px solid var(--border); border-bottom:none; padding:24px 20px 44px; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); }
-.drw.open { transform:translateY(0); }
-.drw-handle { width:36px; height:4px; background:rgba(255,255,255,.15); border-radius:2px; margin:0 auto 22px; }
-.drw-title  { font-size:17px; font-weight:800; margin-bottom:18px; }
-.drw-lbl    { font-size:11px; color:var(--muted); font-weight:700; margin-bottom:8px; letter-spacing:.5px; text-transform:uppercase; }
-.drw-inp    { width:100%; background:rgba(255,255,255,.07); border:1px solid var(--border); border-radius:12px; padding:13px 16px; color:#fff; font-size:14px; font-family:'Manrope',sans-serif; margin-bottom:14px; }
-.drw-inp:focus { outline:none; border-color:var(--red); }
-.drw-btns   { display:flex; gap:10px; margin-bottom:16px; }
-.drw-btn    { flex:1; padding:13px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; font-family:'Manrope',sans-serif; }
-.drw-btn.save   { background:var(--red); color:#fff; }
-.drw-btn.cancel { background:rgba(255,255,255,.08); color:#fff; }
-.drw-tut { display:block; text-align:center; font-size:13px; color:var(--red2); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
-.proxy-list { margin-top:20px; }
-.proxy-row  { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.05); }
-.proxy-name { font-size:13px; font-weight:600; }
-.proxy-st   { font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; }
-.proxy-st.on  { background:rgba(0,255,135,.15); color:rgba(0,255,135,.9); }
-.proxy-st.off { background:rgba(255,255,255,.07); color:var(--muted); }
+/* live status */
+.live-badge{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.18);
+  border-radius:99px;padding:9px 18px;
+  font-size:12px;font-weight:600;color:rgba(0,230,118,.85);
+  margin-bottom:28px;
+}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,230,118,.5)}50%{opacity:.6;box-shadow:0 0 0 6px rgba(0,230,118,0)}}
 
-/* ─── SHARE ─── */
-.shr { position:fixed; bottom:0; left:0; right:0; z-index:600; background:#161616; border-radius:22px 22px 0 0; border:1px solid var(--border); border-bottom:none; padding:24px 20px 44px; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); }
-.shr.open { transform:translateY(0); }
-.shr-handle { width:36px; height:4px; background:rgba(255,255,255,.15); border-radius:2px; margin:0 auto 20px; }
-.shr-title  { font-size:16px; font-weight:800; margin-bottom:14px; }
-.shr-url    { background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:10px; padding:11px 14px; font-size:12px; color:var(--muted); word-break:break-all; margin-bottom:14px; line-height:1.5; }
-.shr-btns   { display:flex; gap:10px; }
-.shr-btn    { flex:1; padding:13px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; font-family:'Manrope',sans-serif; }
-.shr-btn.cp { background:var(--red); color:#fff; }
-.shr-btn.yt { background:rgba(255,255,255,.08); color:#fff; }
+/* footer links */
+.land-footer{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;font-size:11px}
+.land-footer a{color:rgba(255,255,255,.22);text-decoration:none;transition:color .15s}
+.land-footer a:hover{color:rgba(255,255,255,.6)}
 
-/* ─── TOAST ─── */
-.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:rgba(18,18,18,.97); color:#fff; padding:10px 22px; border-radius:99px; font-size:13px; font-weight:600; border:1px solid rgba(255,255,255,.1); z-index:999; white-space:nowrap; pointer-events:none; animation:tin .22s ease, tout .28s ease 2.5s forwards; }
-@keyframes tin  { from{opacity:0;transform:translateX(-50%) translateY(8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-@keyframes tout { to{opacity:0;transform:translateX(-50%) translateY(8px)} }
+/* ─────────────────────────────────────
+   HEADER
+───────────────────────────────────── */
+.hdr{
+  position:fixed;top:0;left:0;right:0;height:var(--hh);
+  display:none;align-items:center;justify-content:space-between;
+  padding:0 16px;z-index:200;
+  background:rgba(8,8,8,.85);backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);
+}
+.hdr.show{display:flex}
 
-@media(max-width:480px) { .slide-overlay{padding:12px 12px 16px} .slide-side{right:8px;bottom:80px} }
-    </style>
+.hdr-logo{
+  font-size:19px;font-weight:900;letter-spacing:-.5px;
+  background:linear-gradient(135deg,#fff,var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hdr-r{display:flex;align-items:center;gap:6px}
+
+/* proxy chip */
+.proxy-chip{
+  font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px;
+  background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.2);
+  color:rgba(0,230,118,.9);letter-spacing:.3px;cursor:default;user-select:none;
+}
+.proxy-chip.warn{background:rgba(255,165,0,.1);border-color:rgba(255,165,0,.25);color:rgba(255,165,0,.9)}
+.proxy-chip.fail{background:rgba(255,50,50,.1);border-color:rgba(255,50,50,.25);color:rgba(255,50,50,.9)}
+
+.hdr-btn{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;color:#fff;font-size:15px;cursor:pointer;transition:background .15s;
+}
+.hdr-btn:hover{background:rgba(255,255,255,.12)}
+
+/* ─────────────────────────────────────
+   VIDEO CONTAINER  ← original structure
+   EXACTLY like the original working code:
+   - overflow:hidden wrapper
+   - transform:translateY per swipe
+   - each .video-item is full height
+   - each .video-item has its own iframe
+───────────────────────────────────── */
+.video-container{
+  position:fixed;
+  top:var(--hh);left:0;right:0;
+  height:calc(100vh - var(--hh));
+  overflow:hidden;
+  display:none;
+  /* smooth swipe animation */
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.video-container.show{display:block}
+
+/* Each slide — full height, relative positioning */
+.video-item{
+  width:100%;
+  height:calc(100vh - var(--hh));
+  position:relative;
+  background:#000;
+  overflow:hidden;
+}
+
+/* ── The iframe ──
+   KEY: negative margin top/bottom hides YouTube's own
+   black letterbox bars. overflow:hidden on .video-item clips it.
+   This is the cleanest way to get full-bleed playback.
+*/
+.video-iframe{
+  position:absolute;
+  top:-60px;left:0;
+  width:100%;
+  height:calc(100% + 120px);
+  border:none;
+  background:#000;
+  display:block;
+}
+
+/* ── Thumbnail cover — shown while iframe loads ──
+   Fades out once iframe fires 'load'.
+   Prevents black flash on every swipe.
+*/
+.video-thumb-cover{
+  position:absolute;inset:0;z-index:3;
+  background:var(--bg) center/cover no-repeat;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .4s ease;
+}
+.video-thumb-cover.loaded{opacity:0;pointer-events:none}
+.thumb-blur-bg{
+  position:absolute;inset:0;
+  background:inherit;
+  filter:blur(20px) brightness(.35);
+  transform:scale(1.08);
+}
+.thumb-img{
+  position:relative;z-index:1;
+  width:min(90%,380px);aspect-ratio:16/9;
+  object-fit:cover;border-radius:12px;
+  box-shadow:0 16px 48px rgba(0,0,0,.7);
+}
+.thumb-play{
+  position:absolute;z-index:2;
+  width:66px;height:66px;border-radius:50%;
+  background:rgba(255,0,64,.88);border:none;
+  color:#fff;font-size:24px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(255,0,64,.5);
+  transition:transform .12s,background .12s;
+}
+.thumb-play:hover{transform:scale(1.08);background:rgba(255,0,64,1)}
+/* loading spinner inside cover */
+.thumb-spinner{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:2;display:flex;align-items:center;gap:8px;
+  font-size:11px;color:rgba(255,255,255,.5);font-weight:600;
+}
+.tspin{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.15);border-top-color:var(--accent);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Proxy error state inside slide ── */
+.proxy-error{
+  position:absolute;inset:0;z-index:4;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px;gap:12px;
+  background:rgba(0,0,0,.8);
+}
+.proxy-error.show{display:flex}
+.pe-emoji{font-size:42px}
+.pe-title{font-size:17px;font-weight:800}
+.pe-text{font-size:13px;color:var(--muted);line-height:1.6}
+.pe-btn{
+  background:var(--accent);color:#fff;border:none;border-radius:12px;
+  padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Inter',sans-serif;margin-top:4px;
+}
+.pe-btn2{
+  background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:12px;
+  padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+
+/* ── Proxy label badge on each slide ── */
+.proxy-badge{
+  position:absolute;top:10px;left:10px;z-index:5;
+  font-size:10px;font-weight:700;letter-spacing:.4px;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);
+  border-radius:99px;padding:4px 10px;color:var(--muted);
+  pointer-events:none;transition:color .3s;
+}
+
+/* ── Video info overlay (bottom) ── */
+.video-overlay{
+  position:absolute;bottom:0;left:0;right:0;z-index:6;
+  background:linear-gradient(transparent,rgba(0,0,0,.65) 50%,rgba(0,0,0,.88) 100%);
+  padding:16px 14px 20px;
+  pointer-events:none;
+}
+.video-overlay *{pointer-events:auto}
+
+.vid-channel{
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.5);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;
+}
+.vid-title{font-size:15px;font-weight:700;line-height:1.4;margin-bottom:4px}
+.vid-stats{font-size:11px;color:var(--muted);margin-bottom:10px}
+
+.vid-chips{display:flex;gap:7px;flex-wrap:wrap}
+.vchip{
+  font-size:11px;font-weight:700;padding:5px 13px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);
+  border-radius:99px;cursor:pointer;color:#fff;white-space:nowrap;
+  transition:background .15s;
+}
+.vchip:hover{background:rgba(255,255,255,.2)}
+.vchip-red{background:rgba(255,0,64,.22);border-color:rgba(255,0,64,.38)}
+
+/* ── Side action buttons ── */
+.side-actions{
+  position:absolute;right:12px;bottom:90px;z-index:6;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+}
+.sa{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:none;border:none;cursor:pointer;color:#fff;
+}
+.sa-circle{
+  width:46px;height:46px;border-radius:50%;
+  background:rgba(255,255,255,.14);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  transition:background .15s,transform .1s;
+}
+.sa:hover .sa-circle{background:rgba(255,255,255,.24);transform:scale(1.08)}
+.sa.liked .sa-circle{background:rgba(255,0,64,.38);border-color:rgba(255,0,64,.5)}
+.sa-label{font-size:10px;color:rgba(255,255,255,.5);font-weight:600}
+
+/* swipe hint arrow */
+.swipe-hint{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  z-index:6;font-size:18px;opacity:.35;pointer-events:none;
+  animation:bob 2.2s ease infinite;
+}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(5px)}}
+
+/* progress dots */
+.progress-dots{
+  position:absolute;right:5px;top:50%;transform:translateY(-50%);
+  z-index:6;display:flex;flex-direction:column;gap:4px;pointer-events:none;
+}
+.pdot{
+  width:3px;height:16px;border-radius:2px;
+  background:rgba(255,255,255,.2);transition:all .3s;
+}
+.pdot.cur{background:#fff;height:24px}
+
+/* ─────────────────────────────────────
+   STATE SCREEN (loading / error)
+───────────────────────────────────── */
+#stateScreen{
+  position:fixed;top:var(--hh);left:0;right:0;bottom:0;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;text-align:center;padding:30px;z-index:150;background:var(--bg);
+}
+.st-spin{width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.08);border-top-color:var(--accent);animation:spin .85s linear infinite}
+.st-icon{font-size:50px}
+.st-title{font-size:21px;font-weight:900}
+.st-text{font-size:14px;color:var(--muted);line-height:1.6;white-space:pre-wrap}
+.st-btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:13px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px}
+
+/* ─────────────────────────────────────
+   SEARCH MODAL
+───────────────────────────────────── */
+.search-modal{position:fixed;inset:0;background:rgba(8,8,8,.97);z-index:400;display:none;flex-direction:column}
+.search-modal.active{display:flex}
+.sm-hdr{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.sm-inp{
+  flex:1;background:rgba(255,255,255,.07);border:1px solid var(--border);
+  border-radius:12px;padding:11px 16px;color:#fff;font-size:15px;font-family:'Inter',sans-serif;
+}
+.sm-inp:focus{outline:none;border-color:var(--accent2)}
+.sm-inp::placeholder{color:var(--muted)}
+.sm-close{width:36px;height:36px;background:var(--surface);border:none;border-radius:10px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+.filter-row{display:flex;gap:8px;padding:12px 16px}
+.fbtn{padding:7px 16px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.65);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:all .15s}
+.fbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.search-results{flex:1;overflow-y:auto;padding:4px 0}
+.sr-item{display:flex;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+.sr-item:hover{background:rgba(255,255,255,.04)}
+.sr-thumb{width:88px;height:58px;border-radius:8px;background:#111;flex-shrink:0;background-size:cover;background-position:center}
+.sr-title{font-size:13px;font-weight:700;line-height:1.35;margin-bottom:4px}
+.sr-sub{font-size:11px;color:var(--muted)}
+
+/* ─────────────────────────────────────
+   SETTINGS DRAWER
+───────────────────────────────────── */
+.drw-overlay{position:fixed;inset:0;z-index:499;background:rgba(0,0,0,.6);display:none}
+.drw-overlay.show{display:block}
+.drw{
+  position:fixed;bottom:0;left:0;right:0;z-index:500;
+  background:#111;border-radius:20px 20px 0 0;
+  border:1px solid var(--border);border-bottom:none;
+  padding:22px 20px 48px;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.drw.show{transform:translateY(0)}
+.drw-handle{width:36px;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin:0 auto 20px}
+.drw-title{font-size:17px;font-weight:800;margin-bottom:16px}
+.drw-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.drw-inp{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;margin-bottom:13px}
+.drw-inp:focus{outline:none;border-color:var(--accent)}
+.drw-btns{display:flex;gap:10px;margin-bottom:14px}
+.drw-btn{flex:1;padding:13px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.drw-btn.save{background:var(--accent);color:#fff}
+.drw-btn.cancel{background:rgba(255,255,255,.08);color:#fff}
+.drw-link{display:block;text-align:center;font-size:13px;color:var(--accent2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* proxy status list in drawer */
+.px-list{margin-top:20px}
+.px-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.px-name{font-size:13px;font-weight:600}
+.px-st{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+.px-st.on{background:rgba(0,230,118,.13);color:rgba(0,230,118,.9)}
+.px-st.off{background:rgba(255,255,255,.07);color:var(--muted)}
+
+/* ─────────────────────────────────────
+   SHARE SHEET
+───────────────────────────────────── */
+.shr-overlay{position:fixed;inset:0;z-index:599;background:rgba(0,0,0,.6);display:none}
+.shr-overlay.show{display:block}
+.shr{position:fixed;bottom:0;left:0;right:0;z-index:600;background:#111;border-radius:20px 20px 0 0;border:1px solid var(--border);border-bottom:none;padding:22px 20px 48px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.shr.show{transform:translateY(0)}
+.shr-handle{width:36px;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin:0 auto 18px}
+.shr-title{font-size:16px;font-weight:800;margin-bottom:12px}
+.shr-url{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:14px;line-height:1.5}
+.shr-btns{display:flex;gap:10px}
+.shr-btn{flex:1;padding:13px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.shr-btn.cp{background:var(--accent);color:#fff}
+.shr-btn.yt{background:rgba(255,255,255,.1);color:#fff}
+
+/* ─────────────────────────────────────
+   TOAST
+───────────────────────────────────── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(16,16,16,.97);color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.1);z-index:999;white-space:nowrap;pointer-events:none;animation:tin .2s ease,tout .25s ease 2.5s forwards}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes tout{to{opacity:0;transform:translateX(-50%) translateY(8px)}}
+
+@media(max-width:480px){
+  .video-overlay{padding:12px 12px 16px}
+  .side-actions{right:8px;bottom:80px}
+}
+</style>
 </head>
 <body>
 
-<!-- LANDING -->
+<!-- ══════════════ LANDING ══════════════ -->
 <div id="landing">
-    <div class="land-logo">TikTube</div>
-    <div class="land-tag">YouTube без VPN</div>
-    <div class="land-sub">Листай YouTube как TikTok. Умный прокси с автопереключением — видео работает даже там, где YouTube заблокирован.</div>
-    <div class="land-pills">
-        <div class="pill pill-g">🟢 4 прокси-сервера</div>
-        <div class="pill">📱 Свайп как TikTok</div>
-        <div class="pill">🔗 Shareable ссылки</div>
-        <div class="pill">⚡ Авто-переключение</div>
+  <div class="land-eyebrow">YouTube · без VPN · TikTok формат</div>
+  <div class="land-logo">TikTube</div>
+  <div class="land-sub">Листай YouTube как TikTok. Умный прокси с автопереключением — работает даже там, где YouTube заблокирован.</div>
+
+  <div class="land-features">
+    <div class="feat">
+      <span class="feat-icon">🚀</span>
+      <div class="feat-title">Без VPN</div>
+      <div class="feat-desc">Работает через прокси-серверы</div>
     </div>
-    <button class="land-cta" onclick="enterApp()">▶&nbsp; Смотреть без VPN</button>
-    <span class="land-link" onclick="openSettings();enterApp()">Ввести YouTube API ключ →</span>
-    <div class="proxy-badge"><div class="dot-live"></div>Прокси активны · VPN не нужен</div>
-    <div class="land-footer">
-        <a href="docs/faq.html" target="_blank">FAQ</a>
-        <a href="docs/privacy.html" target="_blank">Политика конфиденциальности</a>
-        <a href="docs/terms.html" target="_blank">Условия использования</a>
-        <a href="api-tutorial.html" target="_blank">Как получить API ключ</a>
-        <a href="https://github.com" target="_blank">GitHub</a>
-        <span style="color:rgba(255,255,255,.15)">© 2025 TikTube</span>
+    <div class="feat">
+      <span class="feat-icon">📱</span>
+      <div class="feat-title">TikTok свайп</div>
+      <div class="feat-desc">Вверх/вниз, клавиши, колёсико</div>
     </div>
+    <div class="feat">
+      <span class="feat-icon">🔗</span>
+      <div class="feat-title">Шаринг</div>
+      <div class="feat-desc">Уникальная ссылка на каждое видео</div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🔄</span>
+      <div class="feat-title">Авто-прокси</div>
+      <div class="feat-desc">4 сервера, сам переключается</div>
+    </div>
+  </div>
+
+  <button class="land-btn" onclick="enterApp()">▶&nbsp; Смотреть без VPN</button>
+  <span class="land-secondary" onclick="openSettings();enterApp()">Ввести YouTube API ключ →</span>
+
+  <div class="live-badge"><div class="live-dot"></div>Прокси серверы активны</div>
+
+  <div class="land-footer">
+    <a href="docs/faq.html" target="_blank">FAQ</a>
+    <a href="docs/privacy.html" target="_blank">Конфиденциальность</a>
+    <a href="docs/terms.html" target="_blank">Условия</a>
+    <a href="api-tutorial.html" target="_blank">Как получить API ключ</a>
+    <a href="https://github.com" target="_blank">GitHub</a>
+    <span style="color:rgba(255,255,255,.12)">© 2025 TikTube</span>
+  </div>
 </div>
 
-<!-- HEADER -->
-<div class="hdr" id="appHdr" style="display:none">
-    <div class="hdr-logo">TikTube</div>
-    <div class="hdr-right">
-        <div class="hdr-pill" id="proxyPill">🟢 PROXY</div>
-        <button class="hdr-btn" onclick="openSearch()">🔍</button>
-        <button class="hdr-btn" onclick="openSettings()">⚙️</button>
-    </div>
+<!-- ══════════════ HEADER ══════════════ -->
+<div class="hdr" id="appHdr">
+  <div class="hdr-logo">TikTube</div>
+  <div class="hdr-r">
+    <div class="proxy-chip" id="proxyChip">🟢 PROXY</div>
+    <button class="hdr-btn" onclick="openSearch()" title="Поиск">🔍</button>
+    <button class="hdr-btn" onclick="openSettings()" title="Настройки">⚙️</button>
+  </div>
 </div>
 
-<!-- VIEWPORT -->
-<div id="viewport" style="display:none">
-    <div id="feed"></div>
-</div>
+<!-- ══════════════ VIDEO CONTAINER ══════════════
+  Same structure as original working code.
+  overflow:hidden + translateY per slide.
+  Each .video-item has its own iframe.
+══════════════════════════════════════════════ -->
+<div class="video-container" id="videoContainer"></div>
 
-<!-- ═══════════════════════════════════════
-     PERSISTENT PLAYER  ← the key to v3
-     One single fixed iframe that never
-     gets destroyed. Only src changes.
-     Slides contain only overlay HTML.
-═══════════════════════════════════════ -->
-<div id="playerHost" style="display:none">
-    <div id="posterBg"></div>
-    <div id="poster">
-        <div class="poster-inner">
-            <img id="posterImg" class="poster-img" src="" alt="">
-            <button class="play-big" id="playBig" onclick="Player.manualPlay()">▶</button>
-        </div>
-    </div>
-    <div id="playerSpinner">
-        <div class="spin"></div>
-        <div class="spin-lbl" id="spinLbl">Подключаемся...</div>
-    </div>
-    <div id="playerError">
-        <div class="err-icon">😵</div>
-        <div class="err-title">Прокси не отвечает</div>
-        <div class="err-text">Все прокси недоступны для этого видео.<br>Попробуй другой или открой на YouTube.</div>
-        <button class="err-btn" id="errYtBtn">▶ Открыть на YouTube</button>
-        <button class="err-btn" style="background:rgba(255,255,255,.15);margin-top:4px" onclick="Player.retry()">🔄 Попробовать снова</button>
-    </div>
-    <iframe id="ytFrame"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-    <div id="proxyLabel">⚡ Proxy 1</div>
-</div>
-
-<!-- STATE SCREEN -->
+<!-- ══════════════ STATE SCREEN ══════════════ -->
 <div id="stateScreen">
-    <div class="spin" id="stSpin" style="width:40px;height:40px;border-width:3px"></div>
-    <div class="state-icon"  id="stIcon"  style="display:none"></div>
-    <div class="state-title" id="stTitle">Загрузка...</div>
-    <div class="state-text"  id="stText"></div>
-    <button class="state-btn" id="stBtn" style="display:none"></button>
+  <div class="st-spin" id="stSpin"></div>
+  <div class="st-icon" id="stIcon" style="display:none"></div>
+  <div class="st-title" id="stTitle">Загрузка...</div>
+  <div class="st-text"  id="stText"></div>
+  <button class="st-btn" id="stBtn" style="display:none"></button>
 </div>
 
-<!-- SEARCH -->
-<div class="modal" id="searchModal">
-    <div class="modal-hdr">
-        <input type="search" class="modal-inp" id="searchInp" placeholder="Поиск видео, каналов...">
-        <button class="modal-close" onclick="closeSearch()">×</button>
-    </div>
-    <div class="filter-row">
-        <button class="fbtn on" data-type="video"   onclick="setFilter(this)">▶ Видео</button>
-        <button class="fbtn"    data-type="channel" onclick="setFilter(this)">📺 Каналы</button>
-    </div>
-    <div class="results" id="results"></div>
+<!-- ══════════════ SEARCH ══════════════ -->
+<div class="search-modal" id="searchModal">
+  <div class="sm-hdr">
+    <input type="search" class="sm-inp" id="searchInput" placeholder="Поиск видео, каналов...">
+    <button class="sm-close" onclick="closeSearch()">×</button>
+  </div>
+  <div class="filter-row">
+    <button class="fbtn on" data-type="video"   onclick="setFilter(this)">▶ Видео</button>
+    <button class="fbtn"    data-type="channel" onclick="setFilter(this)">📺 Каналы</button>
+  </div>
+  <div class="search-results" id="searchResults"></div>
 </div>
 
-<!-- SETTINGS -->
-<div class="drw-bg" id="drwBg" onclick="closeSettings()"></div>
+<!-- ══════════════ SETTINGS DRAWER ══════════════ -->
+<div class="drw-overlay" id="drwOverlay" onclick="closeSettings()"></div>
 <div class="drw" id="settingsDrw">
-    <div class="drw-handle"></div>
-    <div class="drw-title">⚙️ Настройки</div>
-    <div class="drw-lbl">YouTube API ключ</div>
-    <input type="text" class="drw-inp" id="apiInp" placeholder="AIzaSy...">
-    <div class="drw-btns">
-        <button class="drw-btn save"   onclick="saveKey()">Сохранить</button>
-        <button class="drw-btn cancel" onclick="closeSettings()">Отмена</button>
-    </div>
-    <a class="drw-tut" href="api-tutorial.html" target="_blank">📖 Как получить API ключ</a>
-    <div class="proxy-list" id="proxyList"></div>
+  <div class="drw-handle"></div>
+  <div class="drw-title">⚙️ Настройки</div>
+  <div class="drw-label">YouTube API ключ</div>
+  <input type="text" class="drw-inp" id="apiKeyInput" placeholder="AIzaSy...">
+  <div class="drw-btns">
+    <button class="drw-btn save"   onclick="saveApiKey()">Сохранить</button>
+    <button class="drw-btn cancel" onclick="closeSettings()">Отмена</button>
+  </div>
+  <a class="drw-link" href="api-tutorial.html" target="_blank">📖 Как получить API ключ (туториал)</a>
+  <div class="px-list" id="pxList"></div>
 </div>
 
-<!-- SHARE -->
-<div class="drw-bg" id="shrBg" onclick="closeShare()"></div>
+<!-- ══════════════ SHARE SHEET ══════════════ -->
+<div class="shr-overlay" id="shrOverlay" onclick="closeShare()"></div>
 <div class="shr" id="shareSheet">
-    <div class="shr-handle"></div>
-    <div class="shr-title">🔗 Поделиться</div>
-    <div class="shr-url" id="shrUrl"></div>
-    <div class="shr-btns">
-        <button class="shr-btn cp" onclick="copyShare()">📋 Скопировать</button>
-        <button class="shr-btn yt" onclick="openYT()">▶ YouTube</button>
-    </div>
+  <div class="shr-handle"></div>
+  <div class="shr-title">🔗 Поделиться</div>
+  <div class="shr-url" id="shrUrl"></div>
+  <div class="shr-btns">
+    <button class="shr-btn cp" onclick="copyShare()">📋 Скопировать</button>
+    <button class="shr-btn yt" onclick="openYT()">▶ YouTube</button>
+  </div>
 </div>
 
 <script>
 'use strict';
 
-/* ═══════════════════════════════════════════════════════
-   PROXY CONFIG  +  getProxiedYoutubeUrl()
-   Single source of truth for embed URLs.
-   Uses youtube-nocookie.com — fewer X-Frame restrictions.
-═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   PROXY CONFIG
+   
+   getProxyUrl() — single function that builds the embed URL.
+   Uses youtube-nocookie.com (fewer X-Frame restrictions).
+   Last proxy is a direct embed (works in many regions without VPN).
+═══════════════════════════════════════════════ */
 const PROXIES = [
-    { name: 'Proxy 1', pfx: 'https://proxyvideo.vercel.app' },
-    { name: 'Proxy 2', pfx: 'https://secure-272717.vercel.app' },
-    { name: 'Proxy 3', pfx: 'https://secure-272717.tatnet.app' },
-    { name: 'Proxy 4', pfx: 'https://secure-ridge-22999-537c838d4a8a.herokuapp.com' },
-    { name: 'Direct',  pfx: '', direct: true },
+  { name: 'Proxy 1', base: 'https://proxyvideo.vercel.app' },
+  { name: 'Proxy 2', base: 'https://secure-272717.vercel.app' },
+  { name: 'Proxy 3', base: 'https://secure-272717.tatnet.app' },
+  { name: 'Proxy 4', base: 'https://secure-ridge-22999-537c838d4a8a.herokuapp.com' },
+  { name: 'Direct',  base: '', direct: true },
 ];
 
-function getProxiedYoutubeUrl(videoId, proxyIdx, autoplay) {
-    const p = PROXIES[proxyIdx];
-    // youtube-nocookie.com embeds better without cookies / X-Frame issues
-    const embedBase = p.direct
-        ? `https://www.youtube-nocookie.com/embed/${videoId}`
-        : `${p.pfx}/www.youtube-nocookie.com/embed/${videoId}`;
-    return (
-        embedBase +
-        `?autoplay=${autoplay ? 1 : 0}` +
-        `&mute=1&controls=1&rel=0&modestbranding=1` +
-        `&playsinline=1&fs=1&iv_load_policy=3`
-    );
+let globalProxyIdx = 0; // which proxy is currently "active"
+
+function getProxyUrl(videoId, proxyIdx, autoplay) {
+  const p = PROXIES[proxyIdx];
+  // Build embed URL — no double slashes, no double encoding
+  const embed = p.direct
+    ? `https://www.youtube-nocookie.com/embed/${videoId}`
+    : `${p.base}/www.youtube-nocookie.com/embed/${videoId}`;
+  const params = [
+    `autoplay=${autoplay ? 1 : 0}`,
+    'mute=1',
+    'controls=1',
+    'rel=0',
+    'modestbranding=1',
+    'playsinline=1',
+    'fs=1',
+    'iv_load_policy=3',
+    'origin=' + encodeURIComponent(location.origin),
+  ].join('&');
+  return `${embed}?${params}`;
 }
 
-/* ═══════════════════════════════════════════════════════
-   URL PARAMS
-═══════════════════════════════════════════════════════ */
-const getUrlParams = () => {
-    const p = new URLSearchParams(location.search);
-    return { v: p.get('v'), c: p.get('c') };
-};
-const pushUrlState = (videoId, channelId) =>
-    history.replaceState({}, '', `${location.pathname}?v=${videoId}${channelId ? '&c=' + channelId : ''}`);
-const makeShareUrl = (videoId, channelId) =>
-    `${location.origin}${location.pathname}?v=${videoId}${channelId ? '&c=' + channelId : ''}`;
+/* ═══════════════════════════════════════════════
+   URL PARAMS — shareable links per video
+═══════════════════════════════════════════════ */
+const getParams  = () => { const p = new URLSearchParams(location.search); return { v: p.get('v'), c: p.get('c') }; };
+const pushState  = (vid, cid) => history.replaceState({}, '', `${location.pathname}?v=${vid}${cid ? '&c=' + cid : ''}`);
+const shareUrl   = (vid, cid) => `${location.origin}${location.pathname}?v=${vid}${cid ? '&c=' + cid : ''}`;
 
-/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
    STATE SCREEN
-═══════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════ */
 const SS = {
-    loading(msg = 'Загрузка...') {
-        document.getElementById('stateScreen').style.display = 'flex';
-        document.getElementById('stSpin').style.display      = 'block';
-        document.getElementById('stIcon').style.display      = 'none';
-        document.getElementById('stTitle').textContent       = msg;
-        document.getElementById('stText').textContent        = '';
-        document.getElementById('stBtn').style.display       = 'none';
-    },
-    error(icon, title, text, btnLabel, btnFn) {
-        document.getElementById('stateScreen').style.display = 'flex';
-        document.getElementById('stSpin').style.display      = 'none';
-        const ic = document.getElementById('stIcon');
-        ic.style.display = 'block'; ic.textContent = icon;
-        document.getElementById('stTitle').textContent = title;
-        document.getElementById('stText').textContent  = text;
-        const btn = document.getElementById('stBtn');
-        if (btnLabel) { btn.style.display = 'block'; btn.textContent = btnLabel; btn.onclick = btnFn; }
-        else btn.style.display = 'none';
-    },
-    hide() { document.getElementById('stateScreen').style.display = 'none'; },
+  loading(msg = 'Загрузка...') {
+    document.getElementById('stateScreen').style.display = 'flex';
+    document.getElementById('stSpin').style.display      = 'block';
+    document.getElementById('stIcon').style.display      = 'none';
+    document.getElementById('stTitle').textContent       = msg;
+    document.getElementById('stText').textContent        = '';
+    document.getElementById('stBtn').style.display       = 'none';
+  },
+  error(icon, title, text, btnLabel, btnFn) {
+    document.getElementById('stateScreen').style.display = 'flex';
+    document.getElementById('stSpin').style.display      = 'none';
+    const ic = document.getElementById('stIcon'); ic.style.display = 'block'; ic.textContent = icon;
+    document.getElementById('stTitle').textContent = title;
+    document.getElementById('stText').textContent  = text;
+    const btn = document.getElementById('stBtn');
+    if (btnLabel) { btn.style.display = 'block'; btn.textContent = btnLabel; btn.onclick = btnFn; }
+    else btn.style.display = 'none';
+  },
+  hide() { document.getElementById('stateScreen').style.display = 'none'; },
 };
 
-/* ═══════════════════════════════════════════════════════
-   PLAYER  ← v3 architecture
+/* ═══════════════════════════════════════════════
+   MAIN APP CLASS
+   
+   Architecture: EXACTLY like the original working code.
+   - this.currentVideos[] — array of video objects
+   - this.currentIndex   — which slide is visible
+   - updateVideoPosition() → container.style.transform
+   - Each slide has its OWN iframe (one per video)
+   - On swipe: just change index + call updateVideoPosition()
+   - iframe src changes: only autoplay param toggled
+     (same as original — no src recreation on swipe)
+   
+   Proxy layer:
+   - Per-slide iframe starts with proxy 0
+   - iframe.onload → show frame, hide cover
+   - iframe timeout (8s) → try next proxy
+   - Error UI → manual retry or open on YouTube
+═══════════════════════════════════════════════ */
+class TikTube {
+  constructor() {
+    this.apiKey        = localStorage.getItem('youtube_api_key') || '';
+    this.currentVideos = [];
+    this.currentIndex  = 0;
+    this.searchType    = 'video';
+    this.likes         = JSON.parse(localStorage.getItem('tt_likes') || '{}');
+    // proxyState: per videoId → which proxy index is being used
+    this.proxyState    = {};
+    // per-videoId timeout handles
+    this.proxyTimers   = {};
+    this._inited       = false;
+  }
 
-   What changed vs v2:
-   ✅ ONE iframe #ytFrame — never destroyed, never recreated
-   ✅ isLoading/hasError state machine — user never sees
-      black frame (poster stays visible until ready)
-   ✅ 700ms grace after onload — YouTube needs time to
-      render first frame before we fade poster out
-   ✅ proxyMap[videoId] — remembers working proxy per video
-   ✅ No setTimeout autoplay race condition
-   ✅ swipeLocked in Feed — prevents rapid-fire moveTo
-   ✅ manualPlay() / retry() for user control
-   ✅ stop() blanks iframe when app is backgrounded
-═══════════════════════════════════════════════════════ */
-const TIMEOUT_MS = 8000;
+  init() {
+    if (this._inited) return;
+    this._inited = true;
 
-const Player = (() => {
-    let currentVideoId  = null;
-    let currentProxyIdx = 0;
-    let proxyMap        = {};   // videoId → last-known-good proxyIdx
-    let _isLoading      = false;
-    let _hasError       = false;
-    let _readyFired     = false;
-    let loadTimer       = null;
-    let graceTimer      = null;
+    document.getElementById('appHdr').classList.add('show');
+    document.getElementById('videoContainer').classList.add('show');
+    document.getElementById('stateScreen').style.display = 'flex';
 
-    const frame   = document.getElementById('ytFrame');
-    const poster  = document.getElementById('poster');
-    const pBg     = document.getElementById('posterBg');
-    const pImg    = document.getElementById('posterImg');
-    const pBtn    = document.getElementById('playBig');
-    const spinner = document.getElementById('playerSpinner');
-    const spinLbl = document.getElementById('spinLbl');
-    const errEl   = document.getElementById('playerError');
-    const lbl     = document.getElementById('proxyLabel');
+    this._setupNav();
+    this._renderProxyList();
 
-    function cancelTimers() {
-        clearTimeout(loadTimer);
-        clearTimeout(graceTimer);
-    }
+    const { v, c } = getParams();
+    if (v)              this.loadById(v, c || '');
+    else if (this.apiKey) this.loadTrending();
+    else                this._noKey();
+  }
 
-    // Central UI state updater — single place that decides what's visible
-    function applyState() {
-        const fullyReady = !_isLoading && !_hasError && _readyFired;
+  /* ── Navigation (original logic) ── */
+  _setupNav() {
+    const el = document.getElementById('videoContainer');
+    let sy = 0, sx = 0, moving = false;
 
-        // Poster: show whenever not fully ready
-        poster.classList.toggle('hidden', fullyReady);
-
-        // Spinner
-        spinner.classList.toggle('show', _isLoading);
-
-        // Error
-        errEl.classList.toggle('show', _hasError);
-
-        // iframe
-        frame.classList.toggle('ready', fullyReady);
-
-        // Play button: show only on poster (not loading, not error)
-        pBtn.classList.toggle('gone', _isLoading || _hasError);
-    }
-
-    function setPoster(thumb) {
-        pImg.src                         = thumb;
-        pImg.onerror                     = () => { pImg.src = `https://img.youtube.com/vi/${currentVideoId}/hqdefault.jpg`; };
-        pBg.style.backgroundImage        = `url('${thumb}')`;
-    }
-
-    // Try a specific proxy index for currentVideoId
-    function tryProxy(pi) {
-        if (pi >= PROXIES.length) {
-            cancelTimers();
-            _isLoading = false; _hasError = true; _readyFired = false;
-            applyState();
-            lbl.textContent = '❌ Все прокси недоступны';
-            return;
-        }
-        currentProxyIdx = pi;
-        _isLoading = true; _hasError = false; _readyFired = false;
-        applyState();
-
-        lbl.textContent    = `⏳ ${PROXIES[pi].name}`;
-        spinLbl.textContent = `Пробуем ${PROXIES[pi].name}...`;
-
-        // ← single point where iframe URL changes
-        const src = getProxiedYoutubeUrl(currentVideoId, pi, true);
-        frame.src = src;
-
-        cancelTimers();
-        loadTimer = setTimeout(() => {
-            console.warn(`[Player] timeout proxy ${pi} for`, currentVideoId);
-            tryProxy(pi + 1);
-        }, TIMEOUT_MS);
-    }
-
-    // iframe onload — proxy page loaded, but YT player not rendered yet
-    frame.onload = function () {
-        if (!currentVideoId) return;
-        cancelTimers();
-        _readyFired = true;
-        // Grace: wait for YouTube to render first frame before fading poster
-        graceTimer = setTimeout(() => {
-            if (!currentVideoId || _hasError) return;
-            _isLoading = false;
-            applyState();
-            proxyMap[currentVideoId] = currentProxyIdx;
-            lbl.textContent = `🟢 ${PROXIES[currentProxyIdx].name}`;
-            updateProxyPill(currentProxyIdx);
-        }, 700);
-    };
-
-    frame.onerror = function () {
-        if (!currentVideoId) return;
-        cancelTimers();
-        console.warn(`[Player] onerror proxy ${currentProxyIdx}`);
-        tryProxy(currentProxyIdx + 1);
-    };
-
-    return {
-        // Called on every swipe — just changes src, no DOM recreation
-        load(videoId, thumb) {
-            if (!videoId) return;
-            // Skip reload if same video already playing fine
-            if (videoId === currentVideoId && !_hasError && !_isLoading && _readyFired) return;
-
-            currentVideoId = videoId;
-            cancelTimers();
-            _readyFired = false;
-
-            setPoster(thumb);
-            _isLoading = true; _hasError = false;
-            applyState();
-
-            document.getElementById('errYtBtn').onclick =
-                () => window.open(`https://youtube.com/watch?v=${videoId}`, '_blank');
-
-            // Start from last-known-good proxy or 0
-            tryProxy(proxyMap[videoId] ?? 0);
-        },
-
-        manualPlay() {
-            if (currentVideoId) tryProxy(currentProxyIdx);
-        },
-
-        retry() {
-            if (currentVideoId) {
-                delete proxyMap[currentVideoId];
-                tryProxy(0);
-            }
-        },
-
-        nextProxy() {
-            if (!currentVideoId) return;
-            const next = (currentProxyIdx + 1) % PROXIES.length;
-            proxyMap[currentVideoId] = next;
-            showToast(`🔄 ${PROXIES[next].name}`);
-            tryProxy(next);
-        },
-
-        stop() {
-            cancelTimers();
-            currentVideoId = null; _readyFired = false;
-            _isLoading = false; _hasError = false;
-            frame.src = 'about:blank';
-            frame.classList.remove('ready');
-            poster.classList.remove('hidden');
-            spinner.classList.remove('show');
-            errEl.classList.remove('show');
-        },
-
-        get videoId() { return currentVideoId; },
-    };
-})();
-
-/* ═══════════════════════════════════════════════════════
-   FEED ENGINE  ← v3 architecture
-
-   What changed vs v2:
-   ✅ Slides are positioned absolutely by index (top = i * slideH)
-      Feed translates as a unit. Only 1 transform per swipe.
-   ✅ No per-slide iframe — overlays only.
-   ✅ swipeLocked prevents race-condition on rapid swipes.
-   ✅ go() is the only place idx changes → Player.load() called once.
-   ✅ Feed.set() and Feed.append() rebuild DOM cleanly.
-═══════════════════════════════════════════════════════ */
-const Feed = (() => {
-    let videos      = [];
-    let idx         = 0;
-    let slideH      = 0;
-    let swipeLocked = false;
-
-    const getSlideH = () =>
-        window.innerHeight - parseInt(
-            getComputedStyle(document.documentElement).getPropertyValue('--hdr')
-        );
-
-    const getThumb = v => {
-        const t = v.snippet?.thumbnails;
-        return t?.maxres?.url || t?.high?.url || t?.medium?.url
-            || `https://img.youtube.com/vi/${v.id}/hqdefault.jpg`;
-    };
-
-    function buildSlide(v, i) {
-        const id  = v.id;
-        const sn  = v.snippet   || {};
-        const st  = v.statistics || {};
-        const liked = App.likes[id] ? 'on' : '';
-
-        const el = document.createElement('div');
-        el.className     = 'slide';
-        el.dataset.i     = i;
-        el.dataset.id    = id;
-        el.dataset.cid   = sn.channelId || '';
-        el.style.height  = slideH + 'px';
-        el.style.top     = (i * slideH) + 'px';
-
-        el.innerHTML = `
-<div class="slide-overlay">
-    <div class="ov-ch">📺 ${escH(sn.channelTitle || '')}</div>
-    <div class="ov-title">${escH(sn.title || 'Видео')}</div>
-    <div class="ov-stats">${fmtN(st.viewCount) ? fmtN(st.viewCount) + ' просмотров' : ''} ${fmtN(st.likeCount) ? '· ' + fmtN(st.likeCount) + ' лайков' : ''}</div>
-    <div class="ov-chips">
-        <span class="chip chip-red" onclick="App.share(${i})">🔗 Поделиться</span>
-        <span class="chip" onclick="window.open('https://youtube.com/watch?v=${id}','_blank')">▶ YouTube</span>
-        <span class="chip" onclick="Player.nextProxy()">🔄 Прокси</span>
-    </div>
-</div>
-<div class="slide-side">
-    <button class="sa ${liked}" id="la-${i}" onclick="App.like(${i},'${id}')">
-        <div class="sa-icon">❤️</div><span class="sa-lbl">Лайк</span>
-    </button>
-    <button class="sa" onclick="App.share(${i})">
-        <div class="sa-icon">🔗</div><span class="sa-lbl">Шаринг</span>
-    </button>
-    <button class="sa" onclick="Player.nextProxy()">
-        <div class="sa-icon">🔄</div><span class="sa-lbl">Прокси</span>
-    </button>
-</div>
-${i < videos.length - 1 ? '<div class="swipe-hint">👇</div>' : ''}`;
-        return el;
-    }
-
-    function applyTransform(animate) {
-        const feed = document.getElementById('feed');
-        if (!animate) feed.classList.add('no-anim');
-        feed.style.transform = `translateY(${-idx * slideH}px)`;
-        if (!animate) {
-            feed.getBoundingClientRect(); // force reflow
-            feed.classList.remove('no-anim');
-        }
-    }
-
-    function loadCurrent() {
-        const v = videos[idx];
-        if (!v) return;
-        Player.load(v.id, getThumb(v));
-        pushUrlState(v.id, v.snippet?.channelId || '');
-    }
-
-    return {
-        set(newVideos, startIdx = 0) {
-            videos      = newVideos;
-            idx         = Math.min(startIdx, Math.max(0, newVideos.length - 1));
-            slideH      = getSlideH();
-            swipeLocked = false;
-
-            const feed = document.getElementById('feed');
-            feed.innerHTML    = '';
-            feed.style.height = (videos.length * slideH) + 'px';
-            videos.forEach((v, i) => feed.appendChild(buildSlide(v, i)));
-
-            applyTransform(false);
-            loadCurrent();
-        },
-
-        append(newVideos) {
-            if (!newVideos.length) return;
-            const base = videos.length;
-            videos.push(...newVideos);
-            const feed = document.getElementById('feed');
-            feed.style.height = (videos.length * slideH) + 'px';
-            newVideos.forEach((v, i) => feed.appendChild(buildSlide(v, base + i)));
-        },
-
-        // go() — the ONLY place idx changes
-        go(newIdx) {
-            if (swipeLocked) return;
-            if (newIdx < 0 || newIdx >= videos.length) return;
-            if (newIdx === idx) return;
-
-            swipeLocked = true;
-            idx = newIdx;
-            applyTransform(true);
-            loadCurrent();
-
-            setTimeout(() => { swipeLocked = false; }, 380); // matches CSS transition
-        },
-
-        next() { this.go(idx + 1); },
-        prev() { this.go(idx - 1); },
-
-        get idx()    { return idx; },
-        get videos() { return videos; },
-        get video()  { return videos[idx]; },
-    };
-})();
-
-/* ═══════════════════════════════════════════════════════
-   SWIPE EVENTS — attached to viewport, not feed
-═══════════════════════════════════════════════════════ */
-function setupSwipe() {
-    const vp = document.getElementById('viewport');
-    let sy = 0, sx = 0;
-
-    vp.addEventListener('touchstart', e => {
-        sy = e.touches[0].clientY;
-        sx = e.touches[0].clientX;
+    el.addEventListener('touchstart', e => { sy = e.touches[0].clientY; sx = e.touches[0].clientX; moving = false; }, { passive: true });
+    el.addEventListener('touchmove',  e => { moving = true; }, { passive: true });
+    el.addEventListener('touchend', e => {
+      if (!moving) return;
+      const dy = sy - e.changedTouches[0].clientY;
+      const dx = Math.abs(sx - e.changedTouches[0].clientX);
+      if (Math.abs(dy) > 50 && dx < 80) { dy > 0 ? this.nextVideo() : this.prevVideo(); }
+      moving = false;
     }, { passive: true });
 
-    vp.addEventListener('touchend', e => {
-        const dy = sy - e.changedTouches[0].clientY;
-        const dx = Math.abs(sx - e.changedTouches[0].clientX);
-        if (Math.abs(dy) > 50 && dx < 80) {
-            dy > 0 ? Feed.next() : Feed.prev();
-        }
-    }, { passive: true });
-
-    // Mouse wheel with cooldown
+    // Mouse wheel
     let wc = false;
-    vp.addEventListener('wheel', e => {
-        if (wc) return;
-        wc = true; setTimeout(() => wc = false, 650);
-        e.deltaY > 0 ? Feed.next() : Feed.prev();
+    el.addEventListener('wheel', e => {
+      if (wc) return; wc = true; setTimeout(() => wc = false, 600);
+      e.deltaY > 0 ? this.nextVideo() : this.prevVideo();
     }, { passive: true });
 
     // Keyboard
     document.addEventListener('keydown', e => {
-        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-        if (e.key === 'ArrowDown' || e.key === 'j') Feed.next();
-        if (e.key === 'ArrowUp'   || e.key === 'k') Feed.prev();
+      if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+      if (e.key === 'ArrowDown' || e.key === 'j') this.nextVideo();
+      if (e.key === 'ArrowUp'   || e.key === 'k') this.prevVideo();
     });
-}
+  }
 
-/* ═══════════════════════════════════════════════════════
-   APP
-═══════════════════════════════════════════════════════ */
-const App = {
-    apiKey:     localStorage.getItem('yt_api_key') || '',
-    likes:      JSON.parse(localStorage.getItem('tt_likes') || '{}'),
-    searchType: 'video',
-    _inited:    false,
+  /* ── Load trending ── */
+  async loadTrending() {
+    SS.loading('Загружаем топ видео...');
+    try {
+      const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=RU&maxResults=50&key=${this.apiKey}`);
+      const d = await r.json();
+      if (d.error) throw new Error(d.error.message);
+      this.currentVideos = d.items || [];
+      this.currentIndex  = 0;
+      this.displayVideos();
+      SS.hide();
+    } catch (e) {
+      SS.error('❌', 'Ошибка API', e.message || 'Проверьте API ключ', 'Настроить', openSettings);
+    }
+  }
 
-    init() {
-        if (this._inited) return;
-        this._inited = true;
-        document.getElementById('appHdr').style.display     = 'flex';
-        document.getElementById('viewport').style.display   = 'block';
-        document.getElementById('playerHost').style.display = 'block';
-        setupSwipe();
-        this._renderProxyList();
+  /* ── Load by ID (deep link) ── */
+  async loadById(videoId, channelId) {
+    SS.loading();
+    let meta = { id: videoId, snippet: { title: '', channelTitle: '', channelId }, statistics: {} };
+    if (this.apiKey) {
+      try {
+        const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${this.apiKey}`);
+        const d = await r.json();
+        if (d.items?.length) meta = d.items[0];
+      } catch (_) {}
+    }
+    this.currentVideos = [meta];
+    this.currentIndex  = 0;
+    this.displayVideos();
+    SS.hide();
+    if (channelId && this.apiKey) this._loadChannelVideos(channelId, videoId);
+  }
 
-        const { v, c } = getUrlParams();
-        if (v)              this.loadById(v, c || '');
-        else if (this.apiKey) this.loadTrending();
-        else                this._noKey();
-    },
+  async _loadChannelVideos(cid, excludeId) {
+    try {
+      const r   = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${cid}&type=video&maxResults=20&order=date&key=${this.apiKey}`);
+      const ids = ((await r.json()).items || []).map(i => i.id.videoId).filter(i => i && i !== excludeId).join(',');
+      if (!ids) return;
+      const r2 = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${ids}&key=${this.apiKey}`);
+      const d2 = await r2.json();
+      if (d2.items?.length) {
+        this.currentVideos.push(...d2.items);
+        // Append new slide elements
+        const container = document.getElementById('videoContainer');
+        d2.items.forEach((v, i) => container.appendChild(this._buildSlide(v, this.currentVideos.length - d2.items.length + i)));
+        this._updateProgressDots();
+      }
+    } catch (_) {}
+  }
 
-    async loadTrending() {
-        SS.loading('Загружаем топ видео...');
-        try {
-            const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=RU&maxResults=50&key=${this.apiKey}`);
-            const d = await r.json();
-            if (d.error) throw new Error(d.error.message);
-            Feed.set(d.items || []);
-            SS.hide();
-        } catch (e) {
-            SS.error('❌', 'Ошибка API', e.message || 'Проверьте API ключ', 'Настроить', openSettings);
-        }
-    },
+  /* ── Search ── */
+  async performSearch(q) {
+    if (!this.apiKey) { showToast('⚠️ Нужен API ключ'); openSettings(); return; }
+    document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:40px"><div class="st-spin" style="margin:auto"></div></div>';
+    try {
+      const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=${this.searchType}&q=${encodeURIComponent(q)}&maxResults=25&order=relevance&key=${this.apiKey}`);
+      this._renderSearchResults((await r.json()).items || []);
+    } catch (_) {
+      document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Ошибка поиска</div>';
+    }
+  }
 
-    async loadById(videoId, channelId) {
-        SS.loading();
-        let meta = { id: videoId, snippet: { title: '', channelTitle: '', channelId }, statistics: {} };
-        if (this.apiKey) {
-            try {
-                const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${this.apiKey}`);
-                const d = await r.json();
-                if (d.items?.length) meta = d.items[0];
-            } catch (_) {}
-        }
-        Feed.set([meta]);
-        SS.hide();
-        if (channelId && this.apiKey) this._appendChannel(channelId, videoId);
-    },
+  _renderSearchResults(items) {
+    const c = document.getElementById('searchResults');
+    if (!items.length) { c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Ничего не найдено</div>'; return; }
+    c.innerHTML = items.map(item => {
+      const thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
+      const id    = item.id.videoId || item.id.channelId || '';
+      return `<div class="sr-item" onclick="app.selectResult('${id}','${this.searchType}')">
+        <div class="sr-thumb" style="background-image:url('${thumb}')"></div>
+        <div><div class="sr-title">${escH(item.snippet.title)}</div>
+        <div class="sr-sub">${escH(item.snippet.channelTitle || '')} · ${this.searchType === 'video' ? '▶ Видео' : '📺 Канал'}</div></div>
+      </div>`;
+    }).join('');
+  }
 
-    async _appendChannel(cid, excludeId) {
-        try {
-            const r   = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${cid}&type=video&maxResults=20&order=date&key=${this.apiKey}`);
-            const ids = ((await r.json()).items || []).map(i => i.id.videoId).filter(i => i && i !== excludeId).join(',');
-            if (!ids) return;
-            const r2 = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${ids}&key=${this.apiKey}`);
-            const d2 = await r2.json();
-            if (d2.items?.length) Feed.append(d2.items);
-        } catch (_) {}
-    },
+  async selectResult(id, type) {
+    closeSearch(); SS.loading();
+    try {
+      let vids = [];
+      if (type === 'video') {
+        const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${id}&key=${this.apiKey}`);
+        vids = (await r.json()).items || [];
+      } else {
+        const r  = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${id}&type=video&order=date&maxResults=50&key=${this.apiKey}`);
+        const ids = ((await r.json()).items || []).map(i => i.id.videoId).filter(Boolean).join(',');
+        if (ids) { const r2 = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${ids}&key=${this.apiKey}`); vids = (await r2.json()).items || []; }
+      }
+      this.currentVideos = vids; this.currentIndex = 0;
+      this.displayVideos(); SS.hide();
+    } catch (_) { SS.error('❌', 'Ошибка загрузки', 'Попробуй снова', 'Ок', SS.hide); }
+  }
 
-    async performSearch(q) {
-        if (!this.apiKey) { showToast('⚠️ Нужен API ключ'); openSettings(); return; }
-        document.getElementById('results').innerHTML = '<div style="text-align:center;padding:40px"><div class="spin" style="margin:auto;width:36px;height:36px;border-width:3px"></div></div>';
-        try {
-            const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=${this.searchType}&q=${encodeURIComponent(q)}&maxResults=25&order=relevance&key=${this.apiKey}`);
-            this._renderResults((await r.json()).items || []);
-        } catch (_) {
-            document.getElementById('results').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Ошибка поиска</div>';
-        }
-    },
+  /* ══════════════════════════════════════
+     DISPLAY VIDEOS
+     Builds ALL slide elements, one iframe per slide.
+     ← Same as original. No tricks, no single-iframe hack.
+  ══════════════════════════════════════ */
+  displayVideos() {
+    const container = document.getElementById('videoContainer');
+    if (!this.currentVideos.length) {
+      SS.error('😕', 'Нет видео', 'Попробуй поиск или другой запрос', '', null);
+      return;
+    }
 
-    _renderResults(items) {
-        const c = document.getElementById('results');
-        if (!items.length) { c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Ничего не найдено</div>'; return; }
-        c.innerHTML = items.map(item => {
-            const thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
-            const id    = item.id.videoId || item.id.channelId || '';
-            return `<div class="ri" onclick="App.selectResult('${id}','${this.searchType}')">
-                <div class="ri-thumb" style="background-image:url('${thumb}')"></div>
-                <div class="ri-info">
-                    <div class="ri-title">${escH(item.snippet.title)}</div>
-                    <div class="ri-ch">${escH(item.snippet.channelTitle||'')} · ${this.searchType==='video'?'▶ Видео':'📺 Канал'}</div>
-                </div></div>`;
-        }).join('');
-    },
+    // Clear proxy state for fresh load
+    this.proxyState = {};
+    this.proxyTimers = {};
 
-    async selectResult(id, type) {
-        closeSearch(); SS.loading();
-        try {
-            let vids = [];
-            if (type === 'video') {
-                const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${id}&key=${this.apiKey}`);
-                vids = (await r.json()).items || [];
-            } else {
-                const r  = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${id}&type=video&order=date&maxResults=50&key=${this.apiKey}`);
-                const ids = ((await r.json()).items || []).map(i => i.id.videoId).filter(Boolean).join(',');
-                if (ids) {
-                    const r2 = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${ids}&key=${this.apiKey}`);
-                    vids = (await r2.json()).items || [];
-                }
-            }
-            Feed.set(vids); SS.hide();
-        } catch (_) {
-            SS.error('❌', 'Ошибка загрузки', 'Попробуй снова', 'Ок', SS.hide);
-        }
-    },
-
-    like(i, id) {
-        const btn = document.getElementById('la-' + i);
-        if (!btn) return;
-        const on = btn.classList.toggle('on');
-        if (on) this.likes[id] = 1; else delete this.likes[id];
-        localStorage.setItem('tt_likes', JSON.stringify(this.likes));
-        showToast(on ? '❤️ Лайк!' : '💔 Убрали лайк');
-    },
-
-    share(i) {
-        const v = Feed.videos[i]; if (!v) return;
-        const url = makeShareUrl(v.id, v.snippet?.channelId || '');
-        document.getElementById('shrUrl').textContent  = url;
-        document.getElementById('shareSheet')._vid    = v.id;
-        document.getElementById('shareSheet').classList.add('open');
-        document.getElementById('shrBg').classList.add('open');
-    },
-
-    _noKey() {
-        SS.error('🔑', 'Нужен YouTube API ключ',
-            'Для поиска и трендов нужен бесплатный ключ.\nЕсли есть ссылка ?v=ID — видео откроется без ключа.',
-            'Получить ключ', () => { openSettings(); window.open('api-tutorial.html', '_blank'); });
-    },
-
-    _renderProxyList() {
-        document.getElementById('proxyList').innerHTML =
-            '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px">Прокси-серверы</div>' +
-            PROXIES.map((p, i) => `<div class="proxy-row"><span class="proxy-name">${p.name}</span><span class="proxy-st off" id="ps-${i}">○ Резерв</span></div>`).join('');
-    },
-};
-
-/* ─── UI ─── */
-function updateProxyPill(pi) {
-    document.getElementById('proxyPill').textContent = '🟢 ' + PROXIES[pi].name.toUpperCase();
-    PROXIES.forEach((_, i) => {
-        const el = document.getElementById('ps-' + i);
-        if (!el) return;
-        el.className   = 'proxy-st ' + (i === pi ? 'on' : 'off');
-        el.textContent = i === pi ? '● Активен' : '○ Резерв';
+    container.innerHTML = '';
+    this.currentVideos.forEach((video, index) => {
+      container.appendChild(this._buildSlide(video, index));
     });
+
+    this.updateVideoPosition(false);
+    this._updateProgressDots();
+
+    // Mark first video URL
+    const v = this.currentVideos[0];
+    if (v) pushState(v.id, v.snippet?.channelId || '');
+  }
+
+  /* ── Build one slide element ── */
+  _buildSlide(video, index) {
+    const id    = video.id;
+    const sn    = video.snippet   || {};
+    const st    = video.statistics || {};
+    const thumb = sn.thumbnails?.maxres?.url || sn.thumbnails?.high?.url || sn.thumbnails?.medium?.url
+                  || `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    const liked = this.likes[id] ? 'liked' : '';
+
+    const div = document.createElement('div');
+    div.className   = 'video-item';
+    div.dataset.idx = index;
+    div.dataset.vid = id;
+    div.dataset.cid = sn.channelId || '';
+
+    // Start with proxy 0
+    this.proxyState[id] = 0;
+    const iframeSrc = getProxyUrl(id, 0, index === 0);
+
+    div.innerHTML = `
+<!-- iframe: full-bleed, pulled up/down to hide YT chrome -->
+<iframe
+  class="video-iframe"
+  id="iframe-${index}"
+  src="${iframeSrc}"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+
+<!-- thumbnail cover — visible until iframe loads properly -->
+<div class="video-thumb-cover" id="cover-${index}" style="background-image:url('${thumb}')">
+  <div class="thumb-blur-bg"></div>
+  <img class="thumb-img" src="${thumb}" alt="" onerror="this.style.opacity=0">
+  <button class="thumb-play" onclick="app.retryProxy(${index})">▶</button>
+  <div class="thumb-spinner"><div class="tspin"></div><span id="spinlbl-${index}">Подключаем...</span></div>
+</div>
+
+<!-- per-proxy error state -->
+<div class="proxy-error" id="perr-${index}">
+  <div class="pe-emoji">😵</div>
+  <div class="pe-title">Прокси не работает</div>
+  <div class="pe-text">Все прокси недоступны.<br>Попробуй открыть напрямую на YouTube.</div>
+  <button class="pe-btn" onclick="window.open('https://youtube.com/watch?v=${id}','_blank')">▶ Открыть на YouTube</button>
+  <button class="pe-btn2" onclick="app.retryProxy(${index})">🔄 Попробовать снова</button>
+</div>
+
+<!-- proxy label -->
+<div class="proxy-badge" id="plbl-${index}">⚡ Proxy 1</div>
+
+<!-- bottom overlay -->
+<div class="video-overlay">
+  <div class="vid-channel">📺 ${escH(sn.channelTitle || '')}</div>
+  <div class="vid-title">${escH(sn.title || 'Видео')}</div>
+  <div class="vid-stats">${fmtN(st.viewCount) ? fmtN(st.viewCount) + ' просмотров' : ''} ${fmtN(st.likeCount) ? '· ' + fmtN(st.likeCount) + ' лайков' : ''}</div>
+  <div class="vid-chips">
+    <span class="vchip vchip-red" onclick="app.shareVideo(${index})">🔗 Поделиться</span>
+    <span class="vchip" onclick="window.open('https://youtube.com/watch?v=${id}','_blank')">▶ YouTube</span>
+    <span class="vchip" onclick="app.cycleProxy(${index})">🔄 Прокси</span>
+  </div>
+</div>
+
+<!-- side actions -->
+<div class="side-actions">
+  <button class="sa ${liked}" id="like-${index}" onclick="app.toggleLike(${index},'${id}')">
+    <div class="sa-circle">❤️</div><span class="sa-label">Лайк</span>
+  </button>
+  <button class="sa" onclick="app.shareVideo(${index})">
+    <div class="sa-circle">🔗</div><span class="sa-label">Шаринг</span>
+  </button>
+  <button class="sa" onclick="app.cycleProxy(${index})">
+    <div class="sa-circle">🔄</div><span class="sa-label">Прокси</span>
+  </button>
+</div>
+${index < this.currentVideos.length - 1 ? '<div class="swipe-hint">👇</div>' : ''}
+`;
+
+    // Attach iframe load/error handlers after building
+    setTimeout(() => this._attachIframeHandlers(index, id), 0);
+    return div;
+  }
+
+  /* ── Attach onload/onerror to iframe ──
+     This is the key proxy logic:
+     - onload: wait 600ms grace, then hide cover (YT needs time to render first frame)
+     - timeout: if cover doesn't hide in 8s, try next proxy
+     - onerror: immediately try next proxy
+  ── */
+  _attachIframeHandlers(index, videoId) {
+    const iframe = document.getElementById(`iframe-${index}`);
+    const cover  = document.getElementById(`cover-${index}`);
+    const lbl    = document.getElementById(`plbl-${index}`);
+    const perr   = document.getElementById(`perr-${index}`);
+    const spinLbl = document.getElementById(`spinlbl-${index}`);
+    if (!iframe) return;
+
+    const pi = this.proxyState[videoId] ?? 0;
+
+    // Start timeout for this proxy attempt
+    this._startProxyTimer(index, videoId);
+
+    iframe.onload = () => {
+      // Clear timeout — proxy page responded
+      this._clearProxyTimer(index);
+
+      // Grace period: let YouTube initialize before hiding cover
+      setTimeout(() => {
+        const currentPi = this.proxyState[videoId];
+        if (cover && !perr.classList.contains('show')) {
+          cover.classList.add('loaded');
+          if (lbl) lbl.textContent = `🟢 ${PROXIES[currentPi ?? 0].name}`;
+          if (lbl) lbl.style.color = 'rgba(0,230,118,.9)';
+          // Update global active proxy indicator
+          globalProxyIdx = currentPi ?? 0;
+          updateProxyChip(globalProxyIdx);
+        }
+      }, 600);
+    };
+
+    iframe.onerror = () => {
+      this._clearProxyTimer(index);
+      this._tryNextProxy(index, videoId);
+    };
+  }
+
+  _startProxyTimer(index, videoId) {
+    this._clearProxyTimer(index);
+    this.proxyTimers[index] = setTimeout(() => {
+      this._tryNextProxy(index, videoId);
+    }, 8000);
+  }
+
+  _clearProxyTimer(index) {
+    if (this.proxyTimers[index]) {
+      clearTimeout(this.proxyTimers[index]);
+      delete this.proxyTimers[index];
+    }
+  }
+
+  _tryNextProxy(index, videoId) {
+    const cur  = this.proxyState[videoId] ?? 0;
+    const next = cur + 1;
+    const lbl  = document.getElementById(`plbl-${index}`);
+    const perr = document.getElementById(`perr-${index}`);
+    const spinLbl = document.getElementById(`spinlbl-${index}`);
+
+    if (next >= PROXIES.length) {
+      // All proxies exhausted
+      if (perr) perr.classList.add('show');
+      if (lbl)  { lbl.textContent = '❌ Все прокси недоступны'; lbl.style.color = 'rgba(255,80,80,.9)'; }
+      return;
+    }
+
+    this.proxyState[videoId] = next;
+    if (lbl)     lbl.textContent = `⚡ ${PROXIES[next].name}`;
+    if (spinLbl) spinLbl.textContent = `Пробуем ${PROXIES[next].name}...`;
+
+    // Update iframe src with next proxy (no DOM recreation)
+    const iframe = document.getElementById(`iframe-${index}`);
+    if (iframe) {
+      const isActive = (index === this.currentIndex);
+      iframe.src = getProxyUrl(videoId, next, isActive);
+      this._startProxyTimer(index, videoId);
+    }
+  }
+
+  /* Public: called from slide buttons */
+  cycleProxy(index) {
+    const videoId = this.currentVideos[index]?.id; if (!videoId) return;
+    const cur  = this.proxyState[videoId] ?? 0;
+    const next = (cur + 1) % PROXIES.length;
+    this.proxyState[videoId] = next;
+    showToast(`🔄 ${PROXIES[next].name}`);
+
+    const iframe  = document.getElementById(`iframe-${index}`);
+    const cover   = document.getElementById(`cover-${index}`);
+    const lbl     = document.getElementById(`plbl-${index}`);
+    const perr    = document.getElementById(`perr-${index}`);
+
+    if (cover)  { cover.classList.remove('loaded'); }
+    if (perr)   { perr.classList.remove('show'); }
+    if (lbl)    { lbl.textContent = `⚡ ${PROXIES[next].name}`; lbl.style.color = ''; }
+    if (iframe) {
+      const isActive = (index === this.currentIndex);
+      iframe.src = getProxyUrl(videoId, next, isActive);
+      this._startProxyTimer(index, videoId);
+      this._attachIframeHandlers(index, videoId);
+    }
+  }
+
+  retryProxy(index) {
+    const videoId = this.currentVideos[index]?.id; if (!videoId) return;
+    this.proxyState[videoId] = 0;
+    this.cycleProxy(index); // will increment from 0 to 0 (reset), then apply
+    // Actually reset to 0 directly:
+    this.proxyState[videoId] = 0;
+    const iframe  = document.getElementById(`iframe-${index}`);
+    const cover   = document.getElementById(`cover-${index}`);
+    const lbl     = document.getElementById(`plbl-${index}`);
+    const perr    = document.getElementById(`perr-${index}`);
+    if (cover)  { cover.classList.remove('loaded'); }
+    if (perr)   { perr.classList.remove('show'); }
+    if (lbl)    { lbl.textContent = `⚡ ${PROXIES[0].name}`; lbl.style.color = ''; }
+    if (iframe) {
+      const isActive = (index === this.currentIndex);
+      iframe.src = getProxyUrl(videoId, 0, isActive);
+      this._startProxyTimer(index, videoId);
+      this._attachIframeHandlers(index, videoId);
+    }
+  }
+
+  /* ══════════════════════════════════════
+     UPDATE VIDEO POSITION
+     Exact same logic as original:
+     - container transform translateY
+     - toggle autoplay param on iframes
+  ══════════════════════════════════════ */
+  updateVideoPosition(animate = true) {
+    const container = document.getElementById('videoContainer');
+    const slideH    = window.innerHeight - parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hh').trim());
+    const targetY   = -this.currentIndex * slideH;
+
+    if (!animate) container.style.transition = 'none';
+    container.style.transform = `translateY(${targetY}px)`;
+    if (!animate) {
+      container.getBoundingClientRect(); // flush
+      container.style.transition = '';
+    }
+
+    // Update autoplay on each iframe (same as original)
+    document.querySelectorAll('.video-iframe').forEach((iframe, i) => {
+      const shouldPlay = (i === this.currentIndex);
+      const newSrc = iframe.src.replace(/autoplay=\d/, `autoplay=${shouldPlay ? 1 : 0}`);
+      if (newSrc !== iframe.src) iframe.src = newSrc;
+    });
+
+    // Update URL
+    const v = this.currentVideos[this.currentIndex];
+    if (v) pushState(v.id, v.snippet?.channelId || '');
+
+    this._updateProgressDots();
+  }
+
+  nextVideo() {
+    if (this.currentIndex < this.currentVideos.length - 1) {
+      this.currentIndex++;
+      this.updateVideoPosition();
+    }
+  }
+
+  prevVideo() {
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
+      this.updateVideoPosition();
+    }
+  }
+
+  /* ── Progress dots ── */
+  _updateProgressDots() {
+    // Only show dots if <= 10 videos
+    const n = this.currentVideos.length;
+    if (n <= 1 || n > 10) return;
+    document.querySelectorAll('.progress-dots').forEach(el => el.remove());
+    const dots = document.createElement('div');
+    dots.className = 'progress-dots';
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('div');
+      d.className = 'pdot' + (i === this.currentIndex ? ' cur' : '');
+      dots.appendChild(d);
+    }
+    const active = document.querySelector(`.video-item[data-idx="${this.currentIndex}"]`);
+    if (active) active.appendChild(dots);
+  }
+
+  /* ── Likes ── */
+  toggleLike(index, id) {
+    const btn = document.getElementById(`like-${index}`);
+    if (!btn) return;
+    const on = btn.classList.toggle('liked');
+    if (on) this.likes[id] = 1; else delete this.likes[id];
+    localStorage.setItem('tt_likes', JSON.stringify(this.likes));
+    showToast(on ? '❤️ Лайк!' : '💔 Убрали лайк');
+  }
+
+  /* ── Share ── */
+  shareVideo(index) {
+    const v = this.currentVideos[index]; if (!v) return;
+    const url = shareUrl(v.id, v.snippet?.channelId || '');
+    document.getElementById('shrUrl').textContent = url;
+    document.getElementById('shareSheet')._vid   = v.id;
+    document.getElementById('shareSheet').classList.add('show');
+    document.getElementById('shrOverlay').classList.add('show');
+  }
+
+  _noKey() {
+    SS.error('🔑', 'Нужен YouTube API ключ',
+      'Для загрузки видео и поиска нужен бесплатный ключ.\nЕсли есть ссылка ?v=ID — откроется без ключа.',
+      'Получить ключ', () => { openSettings(); window.open('api-tutorial.html', '_blank'); });
+  }
+
+  _renderProxyList() {
+    document.getElementById('pxList').innerHTML =
+      '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px">Прокси-серверы</div>' +
+      PROXIES.map((p, i) => `<div class="px-row"><span class="px-name">${p.name}</span><span class="px-st off" id="pst-${i}">○ Резерв</span></div>`).join('');
+  }
 }
-function enterApp()     { document.getElementById('landing').classList.add('gone'); App.init(); }
-function openSearch()   { document.getElementById('searchModal').classList.add('open'); document.getElementById('searchInp').focus(); }
-function closeSearch()  { document.getElementById('searchModal').classList.remove('open'); document.getElementById('searchInp').value=''; document.getElementById('results').innerHTML=''; }
-function openSettings() { document.getElementById('apiInp').value=localStorage.getItem('yt_api_key')||''; document.getElementById('settingsDrw').classList.add('open'); document.getElementById('drwBg').classList.add('open'); }
-function closeSettings(){ document.getElementById('settingsDrw').classList.remove('open'); document.getElementById('drwBg').classList.remove('open'); }
-function saveKey() {
-    const k = document.getElementById('apiInp').value.trim();
-    if (!k) { showToast('⚠️ Введите ключ'); return; }
-    localStorage.setItem('yt_api_key', k); App.apiKey = k;
-    closeSettings(); showToast('✅ API ключ сохранён'); App.loadTrending();
+
+/* ═══════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════ */
+function updateProxyChip(pi) {
+  const chip = document.getElementById('proxyChip');
+  chip.textContent = '🟢 ' + PROXIES[pi].name.toUpperCase();
+  chip.className   = 'proxy-chip';
+  PROXIES.forEach((_, i) => {
+    const el = document.getElementById('pst-' + i);
+    if (!el) return;
+    el.className   = 'px-st ' + (i === pi ? 'on' : 'off');
+    el.textContent = i === pi ? '● Активен' : '○ Резерв';
+  });
 }
+
+function enterApp() { document.getElementById('landing').classList.add('gone'); app.init(); }
+
+function openSearch()  { document.getElementById('searchModal').classList.add('active'); document.getElementById('searchInput').focus(); }
+function closeSearch() { document.getElementById('searchModal').classList.remove('active'); document.getElementById('searchInput').value=''; document.getElementById('searchResults').innerHTML=''; }
+
+function openSettings()  { document.getElementById('apiKeyInput').value = localStorage.getItem('youtube_api_key')||''; document.getElementById('settingsDrw').classList.add('show'); document.getElementById('drwOverlay').classList.add('show'); }
+function closeSettings() { document.getElementById('settingsDrw').classList.remove('show'); document.getElementById('drwOverlay').classList.remove('show'); }
+
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k) { showToast('⚠️ Введите ключ'); return; }
+  localStorage.setItem('youtube_api_key', k);
+  app.apiKey = k; closeSettings(); showToast('✅ API ключ сохранён');
+  app.loadTrending();
+}
+
 function setFilter(btn) {
-    document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
-    App.searchType = btn.dataset.type;
-    const q = document.getElementById('searchInp').value.trim();
-    if (q) App.performSearch(q);
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on')); btn.classList.add('on');
+  app.searchType = btn.dataset.type;
+  const q = document.getElementById('searchInput').value.trim();
+  if (q) app.performSearch(q);
 }
-function closeShare()  { document.getElementById('shareSheet').classList.remove('open'); document.getElementById('shrBg').classList.remove('open'); }
-function copyShare()   { const url=document.getElementById('shrUrl').textContent; if(navigator.share)navigator.share({title:'TikTube',url}); else navigator.clipboard.writeText(url).then(()=>showToast('✅ Ссылка скопирована!')); closeShare(); }
-function openYT()      { const vid=document.getElementById('shareSheet')._vid; if(vid)window.open('https://youtube.com/watch?v='+vid,'_blank'); closeShare(); }
-function showToast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
-function escH(s)       { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
-function fmtN(n)       { const x=parseInt(n)||0; if(x>=1e9)return(x/1e9).toFixed(1)+'B'; if(x>=1e6)return(x/1e6).toFixed(1)+'M'; if(x>=1e3)return(x/1e3).toFixed(1)+'K'; return x?x.toString():''; }
+
+function closeShare() { document.getElementById('shareSheet').classList.remove('show'); document.getElementById('shrOverlay').classList.remove('show'); }
+function copyShare()  { const url = document.getElementById('shrUrl').textContent; if(navigator.share) navigator.share({title:'TikTube',url}); else navigator.clipboard.writeText(url).then(()=>showToast('✅ Ссылка скопирована!')); closeShare(); }
+function openYT()     { const vid = document.getElementById('shareSheet')._vid; if(vid) window.open('https://youtube.com/watch?v='+vid,'_blank'); closeShare(); }
+
+function showToast(msg) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
+}
+
+function escH(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function fmtN(n) { const x=parseInt(n)||0; if(x>=1e9)return(x/1e9).toFixed(1)+'B'; if(x>=1e6)return(x/1e6).toFixed(1)+'M'; if(x>=1e3)return(x/1e3).toFixed(1)+'K'; return x?x.toString():''; }
 
 /* search debounce */
 let _st;
-document.getElementById('searchInp').addEventListener('input', e=>{
-    clearTimeout(_st);
-    const q=e.target.value.trim();
-    if(q.length>1) _st=setTimeout(()=>App.performSearch(q),450);
-    else document.getElementById('results').innerHTML='';
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(_st);
+  const q = e.target.value.trim();
+  if (q.length > 1) _st = setTimeout(() => app.performSearch(q), 450);
+  else document.getElementById('searchResults').innerHTML = '';
 });
 
-/* boot */
-document.addEventListener('DOMContentLoaded', ()=>{
-    const {v}=getUrlParams();
-    if(v) enterApp();
+/* ── BOOT ── */
+let app;
+document.addEventListener('DOMContentLoaded', () => {
+  app = new TikTube();
+  const { v } = getParams();
+  if (v) enterApp(); // deep link → skip landing
 });
 </script>
 </body>
